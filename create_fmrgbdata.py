@@ -5,9 +5,20 @@ import torch
 from pydub import AudioSegment
 from scipy.io import wavfile
 from scipy import signal
+from scipy.ndimage import zoom
 import argparse
 
-def process_video(video_path):
+def get_max_frames(directory_path):
+    max_frames = float('-inf')
+    for filename in os.listdir(directory_path):
+        if filename.endswith('.mp4'):
+            video = cv2.VideoCapture(os.path.join(directory_path, filename))
+            frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+            if frames > max_frames:
+                max_frames = frames
+    return max_frames
+
+def process_video(video_path, max_frames):
     # Load video
     video = cv2.VideoCapture(video_path)
 
@@ -38,16 +49,24 @@ def process_video(video_path):
 
         frames.append(frame)
 
-    # Save as tensor
     frames = np.stack(frames)
+
+    # Resize the frames to have the same length as the longest video
+    num_frames = frames.shape[0]
+    if num_frames < max_frames:
+        zoom_factor = max_frames / num_frames
+        frames = zoom(frames, [zoom_factor, 1, 1, 1], mode='nearest')
+
+    # Save as tensor
     tensor = torch.from_numpy(frames)
     torch.save(tensor, video_path + '.pt')
 
 def process_directory(opt):
     directory_path = opt.target
+    max_frames = get_max_frames(directory_path)
     for filename in os.listdir(directory_path):
         if filename.endswith('.mp4'):
-            process_video(os.path.join(directory_path, filename))
+            process_video(os.path.join(directory_path, filename), max_frames)
 
 
 if __name__=='__main__':
