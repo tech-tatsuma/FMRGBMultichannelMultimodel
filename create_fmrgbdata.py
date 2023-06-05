@@ -7,6 +7,8 @@ from scipy.io import wavfile
 from scipy import signal
 from scipy.ndimage import zoom
 import argparse
+import librosa
+
 
 # 指定されたディレクトリ内の全動画のフレーム数を調べ、最もフレーム数の多い動画のフレーム数を返す関数
 def get_max_frames(directory_path):
@@ -20,22 +22,22 @@ def get_max_frames(directory_path):
     return max_frames
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
-def process_video(video_path, max_frames):
+def process_video_withmel(video_path, max_frames):
     # Load video
     video = cv2.VideoCapture(video_path)
 
     # Extract audio
-    # pydubのaudiosegmentクラスを利用して、動画ファイルから音声データを抽出
     audio = AudioSegment.from_file(video_path, format="mp4")
-    # 抽出した音声データをWAV形式のファイルとして出力
-    audio.export("out.wav", format="wav")
-    # scipyのwavfile.read関数を使用して、wavファイルを読み込む。この関数は、サンプリングレート（サンプル/秒）とサンプルデータの配列を返す。
-    sample_rate, samples = wavfile.read('out.wav')
+    audio_samples = np.array(audio.get_array_of_samples())
+    audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
 
-    # Get frequencies and amplitudes
-    # 音声データのスペクトログラムを計算している。
-    #スペクトログラムは、音声信号の周波数成分を時間的に表現したもので、音せデータの解析に広く使用される。scipyのsignal.spectrogram関数はスペクトログラムの周波数、時間、そして振幅（スペクトロ密度）を返す
-    frequencies, times, amplitudes = signal.spectrogram(samples, sample_rate)
+    # Generate spectrogram
+    spectrogram = librosa.feature.melspectrogram(audio_samples, n_mels=128)
+    db_spectrogram = librosa.power_to_db(spectrogram, ref=np.max)
+
+    # Resize spectrogram to match video frames
+    db_spectrogram_resized = zoom(db_spectrogram, [max_frames / db_spectrogram.shape[1], 1], mode='nearest')
+    db_spectrogram_resized = db_spectrogram_resized.T # Transpose to match video frames
 
     # Iterate over each frame in the video
     frames = []
@@ -47,39 +49,71 @@ def process_video(video_path, max_frames):
 
         # Convert to RGB
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-        # Convert frequencies and amplitudes to images and add to channels
-        frequency_image = np.interp(frequencies, (frequencies.min(), frequencies.max()), (0, 255)).astype('uint8')
-        amplitude_image = np.interp(amplitudes, (amplitudes.min(), amplitudes.max()), (0, 255)).astype('uint8')
-
-        frame = np.dstack((frame, frequency_image, amplitude_image))
-
         frames.append(frame)
 
     frames = np.stack(frames)
 
-    # Resize the frames to have the same length as the longest video
-    num_frames = frames.shape[0]
-    if num_frames < max_frames:
-        zoom_factor = max_frames / num_frames
-        frames = zoom(frames, [zoom_factor, 1, 1, 1], mode='nearest')
+    # Save as tensor
+    tensor = {'frames': torch.from_numpy(frames), 'sound': torch.from_numpy(db_spectrogram_resized)}
+    torch.save(tensor, video_path + '.pt')
+
+# 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
+def process_video(video_path, max_frames):
+    # Load video
+    video = cv2.VideoCapture(video_path)
+
+    # Extract audio
+    audio = AudioSegment.from_file(video_path, format="mp4")
+    audio_samples = np.array(audio.get_array_of_samples())
+    audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
+
+    # Generate spectrogram
+    D = librosa.stft(audio_samples)
+    spectrogram = np.abs(D)
+    db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
+
+    # Resize spectrogram to match video frames
+    db_spectrogram_resized = zoom(db_spectrogram, [max_frames / db_spectrogram.shape[1], 1], mode='nearest')
+    db_spectrogram_resized = db_spectrogram_resized.T # Transpose to match video frames
+
+    # Iterate over each frame in the video
+    frames = []
+    while True:
+        ret, frame = video.read()
+
+        if not ret:
+            break
+
+        # Convert to RGB
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frames.append(frame)
+
+    frames = np.stack(frames)
 
     # Save as tensor
-    tensor = torch.from_numpy(frames)
+    tensor = {'frames': torch.from_numpy(frames), 'sound': torch.from_numpy(db_spectrogram_resized)}
     torch.save(tensor, video_path + '.pt')
 
 # 指定されたディレクトリ内の全ての動画を処理する関数 
 def process_directory(opt):
+    audio_process_method = opt.audiomethod
     directory_path = opt.target
     max_frames = get_max_frames(directory_path)
     for filename in os.listdir(directory_path):
         if filename.endswith('.mp4'):
-            process_video(os.path.join(directory_path, filename), max_frames)
+            if audio_process_method=='simple':
+                process_video(os.path.join(directory_path, filename), max_frames)
+            elif audio_process_method=='mel':
+                process_video_withmel(os.path.join(directory_path, filename), max_frames)
+            else:
+                print('音声を処理するメソッドの指定が適切ではありません')
+
 
 # main関数：コマンドライン引数を解析し、ディレクトリ内の動画の処理を開始する
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--target',type=str, required=True, help='folder')
+    parser.add_argument('--audiomethod',type=str, default='simple', help='audio method')
     opt = parser.parse_args()
     print(opt)
     print('-----biginning processing-----')
