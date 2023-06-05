@@ -21,6 +21,9 @@ def get_max_frames(directory_path):
                 max_frames = frames
     return max_frames
 
+def stereo_to_mono(audio_samples):
+    return audio_samples[::2] / 2 + audio_samples[1::2] / 2
+
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video_withmel(video_path, max_frames):
     # Load video
@@ -29,6 +32,10 @@ def process_video_withmel(video_path, max_frames):
     # Extract audio
     audio = AudioSegment.from_file(video_path, format="mp4")
     audio_samples = np.array(audio.get_array_of_samples())
+
+    if audio.channels == 2:
+        audio_samples = stereo_to_mono(audio_samples)
+
     audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
 
     # Generate spectrogram
@@ -38,6 +45,7 @@ def process_video_withmel(video_path, max_frames):
     # Resize spectrogram to match video frames
     db_spectrogram_resized = zoom(db_spectrogram, [max_frames / db_spectrogram.shape[1], 1], mode='nearest')
     db_spectrogram_resized = db_spectrogram_resized.T # Transpose to match video frames
+    db_spectrogram_resized = (db_spectrogram_resized - db_spectrogram_resized.min()) / (db_spectrogram_resized.max() - db_spectrogram_resized.min()) * 255
 
     # Iterate over each frame in the video
     frames = []
@@ -65,6 +73,8 @@ def process_video(video_path, max_frames):
     # Extract audio
     audio = AudioSegment.from_file(video_path, format="mp4")
     audio_samples = np.array(audio.get_array_of_samples())
+    if audio.channels == 2:
+        audio_samples = stereo_to_mono(audio_samples)
     audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
 
     # Generate spectrogram
@@ -75,6 +85,7 @@ def process_video(video_path, max_frames):
     # Resize spectrogram to match video frames
     db_spectrogram_resized = zoom(db_spectrogram, [max_frames / db_spectrogram.shape[1], 1], mode='nearest')
     db_spectrogram_resized = db_spectrogram_resized.T # Transpose to match video frames
+    db_spectrogram_resized = (db_spectrogram_resized - db_spectrogram_resized.min()) / (db_spectrogram_resized.max() - db_spectrogram_resized.min()) * 255
 
     # Iterate over each frame in the video
     frames = []
