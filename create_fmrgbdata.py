@@ -8,6 +8,7 @@ from scipy import signal
 from scipy.ndimage import zoom
 import argparse
 
+# 指定されたディレクトリ内の全動画のフレーム数を調べ、最もフレーム数の多い動画のフレーム数を返す関数
 def get_max_frames(directory_path):
     max_frames = float('-inf')
     for filename in os.listdir(directory_path):
@@ -18,16 +19,22 @@ def get_max_frames(directory_path):
                 max_frames = frames
     return max_frames
 
+# 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video(video_path, max_frames):
     # Load video
     video = cv2.VideoCapture(video_path)
 
     # Extract audio
+    # pydubのaudiosegmentクラスを利用して、動画ファイルから音声データを抽出
     audio = AudioSegment.from_file(video_path, format="mp4")
+    # 抽出した音声データをWAV形式のファイルとして出力
     audio.export("out.wav", format="wav")
+    # scipyのwavfile.read関数を使用して、wavファイルを読み込む。この関数は、サンプリングレート（サンプル/秒）とサンプルデータの配列を返す。
     sample_rate, samples = wavfile.read('out.wav')
 
     # Get frequencies and amplitudes
+    # 音声データのスペクトログラムを計算している。
+    #スペクトログラムは、音声信号の周波数成分を時間的に表現したもので、音せデータの解析に広く使用される。scipyのsignal.spectrogram関数はスペクトログラムの周波数、時間、そして振幅（スペクトロ密度）を返す
     frequencies, times, amplitudes = signal.spectrogram(samples, sample_rate)
 
     # Iterate over each frame in the video
@@ -61,6 +68,7 @@ def process_video(video_path, max_frames):
     tensor = torch.from_numpy(frames)
     torch.save(tensor, video_path + '.pt')
 
+# 指定されたディレクトリ内の全ての動画を処理する関数 
 def process_directory(opt):
     directory_path = opt.target
     max_frames = get_max_frames(directory_path)
@@ -68,7 +76,7 @@ def process_directory(opt):
         if filename.endswith('.mp4'):
             process_video(os.path.join(directory_path, filename), max_frames)
 
-
+# main関数：コマンドライン引数を解析し、ディレクトリ内の動画の処理を開始する
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--target',type=str, required=True, help='folder')
