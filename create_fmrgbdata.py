@@ -21,18 +21,21 @@ def get_max_frames(directory_path):
                 max_frames = frames
     return max_frames
 
+# 音声をstereoからmonoに変換するための関数
 def stereo_to_mono(audio_samples):
     return audio_samples[::2] / 2 + audio_samples[1::2] / 2
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video_withmel(video_path, max_frames):
-    # Load video
+    # ビデオの読み込み
     video = cv2.VideoCapture(video_path)
-
-    # Extract audio
+    fps = video.get(cv2.CAP_PROP_FPS)
+    # mp4ファイルから音声データを読み込む
     audio = AudioSegment.from_file(video_path, format="mp4")
+    # 音声データを配列化する
     audio_samples = np.array(audio.get_array_of_samples())
 
+    # 音声データがstereoの時にmonoに変換する
     if audio.channels == 2:
         audio_samples = stereo_to_mono(audio_samples)
 
@@ -43,7 +46,7 @@ def process_video_withmel(video_path, max_frames):
 
     # Generate spectrogram
     spectrogram = librosa.feature.melspectrogram(audio_samples, n_mels=128)
-    db_spectrogram = librosa.power_to_db(spectrogram, ref=np.max)
+    db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
 
     # Resize spectrogram to match video frames
     db_spectrogram_resized = zoom(db_spectrogram, [max_frames / db_spectrogram.shape[1], 1], mode='nearest')
@@ -80,50 +83,62 @@ def process_video_withmel(video_path, max_frames):
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video(video_path, max_frames):
-    # Load video
+    # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
-
-    # Extract audio
+    fps = video.get(cv2.CAP_PROP_FPS)
+    # mp4データから音声データを取り出す
     audio = AudioSegment.from_file(video_path, format="mp4")
+    # 音声データを配列化する
     audio_samples = np.array(audio.get_array_of_samples())
+    # 音声データがstereoだった場合、monoに変換する
     if audio.channels == 2:
         audio_samples = stereo_to_mono(audio_samples)
+
     if np.issubdtype(audio_samples.dtype, np.integer):
         audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
     elif np.issubdtype(audio_samples.dtype, np.floating):
         audio_samples = audio_samples / np.finfo(audio_samples.dtype).max
 
-    # Generate spectrogram
+    # STFTで複素数の二次元darrayを取得する
     D = librosa.stft(audio_samples)
-    spectrogram = np.abs(D)
-    db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
+    # spectrogram = np.abs(D)
+    # 複素数を強度と位相へ変換
+    S, phase = librosa.magphase(D)
+    # db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
+    # 強度をdb単位へ変換
+    db_spectrogram = librosa.amplitude_to_db(S)
 
-    # Resize spectrogram to match video frames
+    # ビデオフレームに対応できるようにスペクトログラムのリサイズを行う
     db_spectrogram_resized = zoom(db_spectrogram, [max_frames / db_spectrogram.shape[1], 1], mode='nearest')
     db_spectrogram_resized = db_spectrogram_resized.T # Transpose to match video frames
     db_spectrogram_resized = (db_spectrogram_resized - db_spectrogram_resized.min()) / (db_spectrogram_resized.max() - db_spectrogram_resized.min()) * 255
 
     # Iterate over each frame in the video
     frames = []
+    frame_count = 0
     while True:
         ret, frame = video.read()
 
         if not ret:
             break
 
-        # Convert to RGB
+        # RGBに変換する
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # Additional channels for frequency and amplitude
+
+        # ここからのプログラムで音声データを画像に変換する
         f, t, Sxx = signal.spectrogram(audio_samples)
-        max_freq = f[np.argmax(Sxx)]
+        # 現在の振幅情報を取得する
         max_amp = np.max(Sxx)
-        freq_channel = np.full(frame.shape, max_freq)
-        amp_channel = np.full(frame.shape, max_amp)
-
-        # Stack the channels to the frame
-        frame = np.dstack((frame, freq_channel, amp_channel))
+        # 正規化した振幅情報で画像を埋める
+        amp_channel = np.full(frame.shape[:2], (max_amp - np.min(Sxx)) / (np.max(Sxx) - np.min(Sxx)) * 255)
+        # 正規化したスペクトログラムで画像を埋める
+        spectrogram_channel = np.full(frame.shape[:2], db_spectrogram_resized[int(frame_count // fps)])
+        # 5チャンネル画像を生成する
+        frame = np.dstack((frame, amp_channel, spectrogram_channel))
+        # frames配列に追加
         frames.append(frame)
-
+        frame_count += 1
+    # frames配列を構成する
     frames = np.stack(frames)
 
     # Concatenate frames and sound tensor along channel axis
