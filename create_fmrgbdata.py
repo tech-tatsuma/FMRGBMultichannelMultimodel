@@ -36,7 +36,10 @@ def process_video_withmel(video_path, max_frames):
     if audio.channels == 2:
         audio_samples = stereo_to_mono(audio_samples)
 
-    audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
+    if np.issubdtype(audio_samples.dtype, np.integer):
+        audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
+    elif np.issubdtype(audio_samples.dtype, np.floating):
+        audio_samples = audio_samples / np.finfo(audio_samples.dtype).max
 
     # Generate spectrogram
     spectrogram = librosa.feature.melspectrogram(audio_samples, n_mels=128)
@@ -57,12 +60,22 @@ def process_video_withmel(video_path, max_frames):
 
         # Convert to RGB
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # Additional channels for frequency and amplitude
+        f, t, Sxx = signal.spectrogram(audio_samples)
+        max_freq = f[np.argmax(Sxx)]
+        max_amp = np.max(Sxx)
+        freq_channel = np.full(frame.shape, max_freq)
+        amp_channel = np.full(frame.shape, max_amp)
+
+        # Stack the channels to the frame
+        frame = np.dstack((frame, freq_channel, amp_channel))
         frames.append(frame)
 
     frames = np.stack(frames)
 
+    # Concatenate frames and sound tensor along channel axis
     # Save as tensor
-    tensor = {'frames': torch.from_numpy(frames), 'sound': torch.from_numpy(db_spectrogram_resized)}
+    tensor = {'frames': torch.from_numpy(frames)}
     torch.save(tensor, video_path + '.pt')
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
@@ -75,7 +88,10 @@ def process_video(video_path, max_frames):
     audio_samples = np.array(audio.get_array_of_samples())
     if audio.channels == 2:
         audio_samples = stereo_to_mono(audio_samples)
-    audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
+    if np.issubdtype(audio_samples.dtype, np.integer):
+        audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
+    elif np.issubdtype(audio_samples.dtype, np.floating):
+        audio_samples = audio_samples / np.finfo(audio_samples.dtype).max
 
     # Generate spectrogram
     D = librosa.stft(audio_samples)
@@ -97,12 +113,22 @@ def process_video(video_path, max_frames):
 
         # Convert to RGB
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # Additional channels for frequency and amplitude
+        f, t, Sxx = signal.spectrogram(audio_samples)
+        max_freq = f[np.argmax(Sxx)]
+        max_amp = np.max(Sxx)
+        freq_channel = np.full(frame.shape, max_freq)
+        amp_channel = np.full(frame.shape, max_amp)
+
+        # Stack the channels to the frame
+        frame = np.dstack((frame, freq_channel, amp_channel))
         frames.append(frame)
 
     frames = np.stack(frames)
 
+    # Concatenate frames and sound tensor along channel axis
     # Save as tensor
-    tensor = {'frames': torch.from_numpy(frames), 'sound': torch.from_numpy(db_spectrogram_resized)}
+    tensor = {'frames': torch.from_numpy(frames)}
     torch.save(tensor, video_path + '.pt')
 
 # 指定されたディレクトリ内の全ての動画を処理する関数 
