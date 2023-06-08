@@ -23,8 +23,6 @@ def get_max_frames(directory_path):
     return max_frames
 
 # 音声をstereoからmonoに変換するための関数
-# 音声をstereoからmonoに変換するための関数
-# 音声をstereoからmonoに変換するための関数
 def stereo_to_mono(audio_samples):
     return audio_samples[::2] / 2 + audio_samples[1::2] / 2
 
