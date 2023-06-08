@@ -169,7 +169,6 @@ def process_video(video_path, max_frames):
         amplitude = np.abs(audio_samples[frame_count])
         # 振幅を0-255の範囲にリサイズ
         resized_amplitude = (amplitude / max_amplitude) * 255
-        print('resized_amplitude: ',resized_amplitude)
         # 正規化した振幅情報で画像を埋める
         amp_channel = np.full(frame.shape[:2], int(resized_amplitude))
         # 正規化したスペクトログラムで画像を埋める
@@ -184,8 +183,7 @@ def process_video(video_path, max_frames):
 
     # Concatenate frames and sound tensor along channel axis
     # Save as tensor
-    tensor = {'frames': torch.from_numpy(frames)}
-    torch.save(tensor, video_path + '.pt')
+    torch.save(torch.from_numpy(frames), video_path + '.pt')
 
 # 指定されたディレクトリ内の全ての動画を処理する関数 
 def process_directory(opt):
