@@ -24,16 +24,14 @@ def get_max_frames(directory_path):
 
 # 音声をstereoからmonoに変換するための関数
 # 音声をstereoからmonoに変換するための関数
+# 音声をstereoからmonoに変換するための関数
 def stereo_to_mono(audio_samples):
     return audio_samples[::2] / 2 + audio_samples[1::2] / 2
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video_withmel(video_path, max_frames):
     # ビデオの読み込み
-    # ビデオの読み込み
     video = cv2.VideoCapture(video_path)
-    fps = video.get(cv2.CAP_PROP_FPS)
-    # mp4ファイルから音声データを読み込む
     fps = video.get(cv2.CAP_PROP_FPS)
     # mp4ファイルから音声データを読み込む
     audio = AudioSegment.from_file(video_path, format="mp4")
@@ -53,7 +51,6 @@ def process_video_withmel(video_path, max_frames):
 
     # Generate spectrogram
     spectrogram = librosa.feature.melspectrogram(audio_samples, n_mels=128)
-    db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
     db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
 
     # Resize spectrogram to match video frames
@@ -109,7 +106,6 @@ def process_video_withmel(video_path, max_frames):
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video(video_path, max_frames):
     # ビデオを読み込む
-    # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
     # ビデオのfpsを取得する
     fps = video.get(cv2.CAP_PROP_FPS)
@@ -163,8 +159,6 @@ def process_video(video_path, max_frames):
     max_amplitude = np.max(np.abs(audio_samples))
     # Iterate over each frame in the video
     frames = []
-    frame_count = 0
-    frame_count = 0
     while True:
         ret, frame = video.read()
 
@@ -186,8 +180,6 @@ def process_video(video_path, max_frames):
         frame = np.dstack((frame, amp_channel, spectrogram_channel))
         # frames配列に追加
         frames.append(frame)
-        frame_count += 1
-    # frames配列を構成する
         frame_count += 1
     # frames配列を構成する
     frames = np.stack(frames)
