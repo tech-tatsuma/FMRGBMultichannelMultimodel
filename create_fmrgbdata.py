@@ -23,27 +23,25 @@ def get_max_frames(directory_path):
     return max_frames
 
 # 音声をstereoからmonoに変換するための関数
+# 音声をstereoからmonoに変換するための関数
 def stereo_to_mono(audio_samples):
     return audio_samples[::2] / 2 + audio_samples[1::2] / 2
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video_withmel(video_path, max_frames):
     # ビデオの読み込み
+    # ビデオの読み込み
     video = cv2.VideoCapture(video_path)
     fps = video.get(cv2.CAP_PROP_FPS)
     # mp4ファイルから音声データを読み込む
+    fps = video.get(cv2.CAP_PROP_FPS)
+    # mp4ファイルから音声データを読み込む
     audio = AudioSegment.from_file(video_path, format="mp4")
-<<<<<<< HEAD
     
     # サンプルレートを取得
     sample_rate = audio.frame_rate
     # 音声データを配列化する
     audio_samples = np.array(audio.get_array_of_samples())
-=======
-    # 音声データを配列化する
-    audio_samples = np.array(audio.get_array_of_samples())
-
->>>>>>> 491dddb996da766f003115130408ba50a5f01972
     # 音声データがstereoの時にmonoに変換する
     if audio.channels == 2:
         audio_samples = stereo_to_mono(audio_samples)
@@ -55,6 +53,7 @@ def process_video_withmel(video_path, max_frames):
 
     # Generate spectrogram
     spectrogram = librosa.feature.melspectrogram(audio_samples, n_mels=128)
+    db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
     db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
 
     # Resize spectrogram to match video frames
@@ -110,8 +109,8 @@ def process_video_withmel(video_path, max_frames):
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video(video_path, max_frames):
     # ビデオを読み込む
+    # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
-<<<<<<< HEAD
     # ビデオのfpsを取得する
     fps = video.get(cv2.CAP_PROP_FPS)
     print('fps: ', fps)
@@ -137,23 +136,12 @@ def process_video(video_path, max_frames):
     if audio.channels == 2:
         audio_samples = stereo_to_mono(audio_samples)
         audio_samples_frequency = stereo_to_mono(audio_samples_frequency)
-=======
-    fps = video.get(cv2.CAP_PROP_FPS)
-    # mp4データから音声データを取り出す
-    audio = AudioSegment.from_file(video_path, format="mp4")
-    # 音声データを配列化する
-    audio_samples = np.array(audio.get_array_of_samples())
-    # 音声データがstereoだった場合、monoに変換する
-    if audio.channels == 2:
-        audio_samples = stereo_to_mono(audio_samples)
->>>>>>> 491dddb996da766f003115130408ba50a5f01972
 
     if np.issubdtype(audio_samples.dtype, np.integer):
         audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
     elif np.issubdtype(audio_samples.dtype, np.floating):
         audio_samples = audio_samples / np.finfo(audio_samples.dtype).max
 
-<<<<<<< HEAD
     # 周波数情報を離散フーリエ変換で取得する
     results = []
     for i in range(int(total_frames)):
@@ -173,24 +161,9 @@ def process_video(video_path, max_frames):
 
     # 音声データの最大振幅を取得
     max_amplitude = np.max(np.abs(audio_samples))
-=======
-    # STFTで複素数の二次元darrayを取得する
-    D = librosa.stft(audio_samples)
-    # spectrogram = np.abs(D)
-    # 複素数を強度と位相へ変換
-    S, phase = librosa.magphase(D)
-    # db_spectrogram = librosa.amplitude_to_db(spectrogram, ref=np.max)
-    # 強度をdb単位へ変換
-    db_spectrogram = librosa.amplitude_to_db(S)
-
-    # ビデオフレームに対応できるようにスペクトログラムのリサイズを行う
-    db_spectrogram_resized = zoom(db_spectrogram, [max_frames / db_spectrogram.shape[1], 1], mode='nearest')
-    db_spectrogram_resized = db_spectrogram_resized.T # Transpose to match video frames
-    db_spectrogram_resized = (db_spectrogram_resized - db_spectrogram_resized.min()) / (db_spectrogram_resized.max() - db_spectrogram_resized.min()) * 255
-
->>>>>>> 491dddb996da766f003115130408ba50a5f01972
     # Iterate over each frame in the video
     frames = []
+    frame_count = 0
     frame_count = 0
     while True:
         ret, frame = video.read()
@@ -200,7 +173,6 @@ def process_video(video_path, max_frames):
 
         # RGBに変換する
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-<<<<<<< HEAD
         # 振幅データを取得
         amplitude = np.abs(audio_samples[frame_count])
         # 振幅を0-255の範囲にリサイズ
@@ -210,21 +182,12 @@ def process_video(video_path, max_frames):
         amp_channel = np.full(frame.shape[:2], int(resized_amplitude))
         # 正規化したスペクトログラムで画像を埋める
         spectrogram_channel = np.full(frame.shape[:2], int(results[frame_count]))
-=======
-
-        # ここからのプログラムで音声データを画像に変換する
-        f, t, Sxx = signal.spectrogram(audio_samples)
-        # 現在の振幅情報を取得する
-        max_amp = np.max(Sxx)
-        # 正規化した振幅情報で画像を埋める
-        amp_channel = np.full(frame.shape[:2], (max_amp - np.min(Sxx)) / (np.max(Sxx) - np.min(Sxx)) * 255)
-        # 正規化したスペクトログラムで画像を埋める
-        spectrogram_channel = np.full(frame.shape[:2], db_spectrogram_resized[int(frame_count // fps)])
->>>>>>> 491dddb996da766f003115130408ba50a5f01972
         # 5チャンネル画像を生成する
         frame = np.dstack((frame, amp_channel, spectrogram_channel))
         # frames配列に追加
         frames.append(frame)
+        frame_count += 1
+    # frames配列を構成する
         frame_count += 1
     # frames配列を構成する
     frames = np.stack(frames)
