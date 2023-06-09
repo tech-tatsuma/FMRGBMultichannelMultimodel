@@ -5,7 +5,7 @@ The network uses a three-dimensional convolutional neural network.
 ## Usage
 1. Creation of data sets
 ```
-python create_fmrgbdata.py --target <mp4データが格納されているディレクトリーパス> --audiomethod <simple or mel> --frequency_param <周波数解析パラメータ（int）>
+python create_fmrgbdata.py --target <mp4データが格納されているディレクトリーパス> --audiomethod <simple or mel> --frequency_param <周波数解析パラメータ（int）> --skip <ループをスキップする回数（int）>
 ```
 target: Specification of the directory containing the video data to be converted to fmrgb data.
 
