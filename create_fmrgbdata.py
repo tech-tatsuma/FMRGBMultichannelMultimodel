@@ -12,6 +12,7 @@ import matplotlib
 import matplotlib.pyplot as pyplot
 from PIL import Image
 import io
+from tqdm import tqdm
 
 
 # 指定されたディレクトリ内の全動画のフレーム数を調べ、最もフレーム数の多い動画のフレーム数を返す関数
@@ -96,6 +97,7 @@ def process_video_withmel(video_path, max_frames, parameter):
     max_amplitude = np.max(np.abs(audio_samples))
     # Iterate over each frame in the video
     frames = []
+    pbar = tqdm(total=total_frames)
     while True:
         ret, frame = video.read()
 
@@ -117,6 +119,7 @@ def process_video_withmel(video_path, max_frames, parameter):
         # frames配列に追加
         frames.append(frame)
         frame_count += 1
+        pbar.update(1)
     # frames配列を構成する
     frames = np.stack(frames)
 
@@ -180,6 +183,7 @@ def process_video(video_path, max_frames, parameter):
     max_amplitude = np.max(np.abs(audio_samples))
     # Iterate over each frame in the video
     frames = []
+    pbar = tqdm(total=total_frames)
     while True:
         ret, frame = video.read()
 
@@ -201,6 +205,7 @@ def process_video(video_path, max_frames, parameter):
         # frames配列に追加
         frames.append(frame)
         frame_count += 1
+        pbar.update(1)
     # frames配列を構成する
     frames = np.stack(frames)
 
