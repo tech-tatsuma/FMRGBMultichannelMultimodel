@@ -30,7 +30,7 @@ def stereo_to_mono(audio_samples):
     return audio_samples[::2] / 2 + audio_samples[1::2] / 2
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
-def process_video_withmel(video_path, max_frames):
+def process_video_withmel(video_path, max_frames, parameter):
     # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -43,7 +43,7 @@ def process_video_withmel(video_path, max_frames):
 
     # mp4データから音声データを取り出す
     audio = AudioSegment.from_file(video_path, format="mp4") 
-    frequency_param = 100
+    frequency_param = parameter
     # 周波数を計算するための音声配列を作る作業    
     # 一秒間にfps*frequency_param個の音声データをサンプリングする
     audio = audio.set_frame_rate(int(fps*frequency_param))
@@ -125,7 +125,7 @@ def process_video_withmel(video_path, max_frames):
     torch.save(torch.from_numpy(frames), video_path + '.pt')
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
-def process_video(video_path, max_frames):
+def process_video(video_path, max_frames, parameter):
     # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
     # ビデオのfpsを取得する
@@ -136,7 +136,7 @@ def process_video(video_path, max_frames):
 
     # mp4データから音声データを取り出す
     audio = AudioSegment.from_file(video_path, format="mp4") 
-    frequency_param = 100
+    frequency_param = parameter
     # 周波数を計算するための音声配列を作る作業    
     # 一秒間にfps*frequency_param個の音声データをサンプリングする
     audio = audio.set_frame_rate(int(fps*frequency_param))
@@ -212,13 +212,14 @@ def process_video(video_path, max_frames):
 def process_directory(opt):
     audio_process_method = opt.audiomethod
     directory_path = opt.target
+    parameter = opt.frequency_param
     max_frames = get_max_frames(directory_path)
     for filename in os.listdir(directory_path):
         if filename.endswith('.mp4'):
             if audio_process_method=='simple':
-                process_video(os.path.join(directory_path, filename), max_frames)
+                process_video(os.path.join(directory_path, filename), max_frames, parameter)
             elif audio_process_method=='mel':
-                process_video_withmel(os.path.join(directory_path, filename), max_frames)
+                process_video_withmel(os.path.join(directory_path, filename), max_frames, parameter)
             else:
                 print('音声を処理するメソッドの指定が適切ではありません')
 
@@ -228,6 +229,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--target',type=str, required=True, help='folder')
     parser.add_argument('--audiomethod',type=str, default='simple', help='audio method')
+    parser.add_argument('--frequency_param', type=int, default=100, help='frequency parameter')
     opt = parser.parse_args()
     print(opt)
     print('-----biginning processing-----')

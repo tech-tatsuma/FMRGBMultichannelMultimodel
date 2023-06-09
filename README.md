@@ -1,47 +1,47 @@
-# FMRGBマルチチャネルマルチモデル
-音の周波数と振幅、画像のRGB情報をチャンネルとした動画データを作成し、学習を行うモデルです。
-ネットワークには、3次元の畳み込みニューラルネットワークを採用しています。
+# FMRGBMultichannelMultimodel
+The model is trained by creating video data with sound frequencies and amplitudes and image RGB information as channels.
+The network uses a three-dimensional convolutional neural network.
 
-## 利用方法
-1. データセットの作成
+## Usage
+1. Creation of data sets
 ```
-python create_fmrgbdata.py --target <mp4データが格納されているディレクトリーパス> --audiomethod <simple or mel>
+python create_fmrgbdata.py --target <mp4データが格納されているディレクトリーパス> --audiomethod <simple or mel> --frequency_param <周波数解析パラメータ（int）>
 ```
-target: fmrgbデータに変換したい動画データが格納されているディレクトリの指定
+target: Specification of the directory containing the video data to be converted to fmrgb data.
 
-audiometho: 音声データの解析をシンプルなスペクトログラムで解析するかメロスペクトログラムで解析するかをしてするオプション
+audiomethod: Option to analyse speech data with a simple spectrogram or with a melospectrogram.
+
+frequency_param: Parameters used for frequency analysis. Specified as integer type.
     
-2. データの可視化
+2. Data visualisation
 ```
-python visualize.py --target <ptファイル> --result <結果を格納するディレクトリパス>
+python visualize.py --target <ptファイル>
 ```
-3. FMRGBマルチチャネルモデルの学習
+3. FMRGB multi-channel model training.
 ```
 python train.py --data <csvデータ> --epochs <学習回数> --test_size <テストデータの割合指定> --patience <早期終了パラメータ>
 ```
-##  プログラム説明
-### 音声データの画像化
-スペクトログラム
+##  Explanation of the program
+### Imaging of audio data
+SIMPLE SPECTROGRAM
 
-1. STFT（Short Time Fourier Transform）の計算：librosa.stft(audio_samples)関数を使って、短時間フーリエ変換を行います。これは、音声信号を小さなチャンク（フレーム）に分割し、各フレームにフーリエ変換を適用して複素数の結果を生成します。
+1. Calculation of the STFT (Short Time Fourier Transform)：The librosa.stft(audio_samples) function is used to perform a short-time Fourier transform. It divides the audio signal into small chunks (frames) and applies the Fourier transform to each frame to produce a complex result.
 
-2. スペクトログラムの計算：np.abs()を使って、STFTの結果から振幅スペクトログラムを計算します。これは、各フレームと周波数で音声信号の振幅を示します。
+2. Calculation of spectrograms：np.abs() is used to calculate an amplitude spectrogram from the STFT results. This shows the amplitude of the speech signal at each frame and frequency.
 
-3. 2.で算出されたデータを0~255のレンジにスケーリングし、それを画像として出力します。
+3. The frequencies with the highest amplitude (most affected by the sound) are taken from the results calculated in 2.
 
-メルスペクトログラム
+4. The results calculated by the above methods are scaled to 0~255 and embedded in the image.
 
-1. 音声抽出：まず、AudioSegment.from_file(video_path, format="mp4")を用いて動画ファイルから音声を抽出しています。その後、音声サンプルをnp.array(audio.get_array_of_samples())で配列に変換し、音声サンプルを正規化しています。
+MELSPECTROGRAM
 
-2. メルスペクトログラムの生成：librosa.feature.melspectrogram(audio_samples, n_mels=128)を用いて音声信号からメルスペクトログラムを生成しています。メルスペクトログラムは、音声信号の周波数領域をメルスケールで表示したもので、人間の聴覚特性を反映しています。
+1. Samples audio data at a constant frequency based on the video frame rate.
 
-3. デシベルスケールへの変換：librosa.power_to_db(spectrogram, ref=np.max)を用いて、メルスペクトログラムをデシベルスケールに変換しています。デシベルスケールは、人間の聴覚が対数的であるという事実を反映しています。
+2. Use librosa.feature.melspectrogram to compute the melspectrogram of the speech data.
 
-4. メルスペクトログラムのリサイズ：zoom(db_spectrogram, [max_frames / db_spectrogram.shape[1], 1], mode='nearest')を用いて、メルスペクトログラムをリサイズしています。ここで、max_framesは動画のフレーム数で、メルスペクトログラムを動画のフレーム数に合わせてリサイズします。
+3. Save the mel spectrogram as an image and save its value as a NumPy array as the fifth channel image.
 
-5. メルスペクトログラムの正規化と画像化：最後に、db_spectrogram_resized = (db_spectrogram_resized - db_spectrogram_resized.min()) / (db_spectrogram_resized.max() - db_spectrogram_resized.min()) * 255を用いて、メルスペクトログラムを0-255の範囲に正規化しています。こうすることで、各値が画像ピクセルとして扱えるようになり、画像化されます。
+### How to align data lengths
+1. Examines all videos in the directory and retrieves the frame count of the video with the highest frame count.
 
-### データの長さの揃える方法
-1. ディレクトリ内の全ての動画を調査し、フレーム数が最も多い動画のフレーム数を取得します。
-
-2. その後、各動画を処理する際に動画のフレーム数が最大フレーム数より少ない場合に、フレーム数を最大フレーム数にリサイズします。リサイズにはscipy.ndimage.zoom関数を用います。この関数は、入力配列の各次元を特定のズーム因子に基づいて拡大または縮小します。ズーム因子は、現在のフレーム数を最大フレームで割ったもので計算されます。
+2. The number of frames is then resized to the maximum number of frames if the number of frames in the video is less than the maximum number of frames when each video is processed. The scipy.ndimage.zoom function is used for resizing. This function scales up or down each dimension of the input array based on a specific zoom factor. The zoom factor is calculated by dividing the current number of frames by the maximum number of frames.
