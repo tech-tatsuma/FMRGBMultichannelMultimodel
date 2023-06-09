@@ -98,6 +98,7 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
     # Iterate over each frame in the video
     frames = []
     pbar = tqdm(total=total_frames)
+    frame_count=0
     while True:
         ret, frame = video.read()
 
@@ -184,6 +185,7 @@ def process_video(video_path, max_frames, parameter, skip):
     # Iterate over each frame in the video
     frames = []
     pbar = tqdm(total=total_frames)
+    frame_count = 0
     while True:
         ret, frame = video.read()
 
