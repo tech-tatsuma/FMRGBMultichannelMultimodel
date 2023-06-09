@@ -189,7 +189,7 @@ def process_video(video_path, max_frames, parameter, skip):
 
         if not ret:
             break
-        if total_frames%skip==0:
+        if frame_count%skip==0:
             # RGBに変換する
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             # 振幅データを取得
