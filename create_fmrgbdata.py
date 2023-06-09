@@ -143,8 +143,8 @@ def process_video(video_path, max_frames):
         end = start + frequency_param
 
         frequencies, times, Zxx = signal.stft(audio_samples_frequency[start:end], fs=int(fps*frequency_param))
-        print('frequencies: ',frequencies)
-        max_freq = np.max(np.abs(frequencies))
+        mag = np.abs(Zxx)
+        max_freq = frequencies(np.argmax(mag))
         results.append(max_freq)
     print('results', results[0:10])
     max_value = max(results)
