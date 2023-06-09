@@ -6,6 +6,7 @@ from torchvision import transforms
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 def train(opt):
     data_file = opt.data
@@ -51,7 +52,7 @@ def train(opt):
         train_loss = 0
         val_loss = 0
         model.train()
-        for i, (inputs, labels) in enumerate(train_loader, 0):
+        for i, (inputs, labels) in tqdm(enumerate(train_loader, 0)):
             # Zero the parameter gradients
             optimizer.zero_grad()
 
