@@ -223,9 +223,9 @@ def process_directory(opt):
     for filename in os.listdir(directory_path):
         if filename.endswith('.mp4'):
             if audio_process_method=='simple':
-                process_video(os.path.join(directory_path, filename), max_frames, parameter)
+                process_video(os.path.join(directory_path, filename), max_frames, parameter, skip)
             elif audio_process_method=='mel':
-                process_video_withmel(os.path.join(directory_path, filename), max_frames, parameter)
+                process_video_withmel(os.path.join(directory_path, filename), max_frames, parameter, skip)
             else:
                 print('音声を処理するメソッドの指定が適切ではありません')
 
