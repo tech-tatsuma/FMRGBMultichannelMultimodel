@@ -120,7 +120,7 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
             # frames配列に追加
             frames.append(frame)
             frame_count += 1
-            pbar.update(1)
+        pbar.update(1)
     # frames配列を構成する
     frames = np.stack(frames)
 
@@ -207,7 +207,7 @@ def process_video(video_path, max_frames, parameter, skip):
             # frames配列に追加
             frames.append(frame)
             frame_count += 1
-            pbar.update(1)
+        pbar.update(1)
     # frames配列を構成する
     frames = np.stack(frames)
 
