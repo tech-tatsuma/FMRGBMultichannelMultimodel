@@ -57,7 +57,7 @@ pip install -r requirements.txt
 python detect_pose.py --video_path <動画データが入っているディレクトリのパス>
 ```
 
-## install required module
+## Install required module
 ```
 apt-get update
 apt-get install -y libgl1-mesa-glx
