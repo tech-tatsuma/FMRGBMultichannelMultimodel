@@ -13,6 +13,7 @@ import matplotlib.pyplot as pyplot
 from PIL import Image
 import io
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 # 指定されたディレクトリ内の全動画のフレーム数を調べ、最もフレーム数の多い動画のフレーム数を返す関数
@@ -73,22 +74,27 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
         start = i * frequency_param
         end = start + frequency_param
 
-        S = librosa.feature.melspectrogram(audio_samples_frequency[start:end], sr=int(fps*frequency_param))
+        S = librosa.feature.melspectrogram(y=audio_samples_frequency[start:end], sr=round(fps*frequency_param))
+        if i%500==0:
+            print(S)
         plt.figure(figsize=(3,3))
-        plt.specgram(S, cmap='gray')
+        # データをdB単位に変換
+        S_dB = librosa.power_to_db(S, ref=np.max)
+        plt.imshow(S_dB, cmap='gray', origin='lower', aspect='auto')
         plt.axis('off')
-
+        plt.show()
         buf = io.BytesIO()
-        plt.savefig(bufm, format='png')
+        plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
         buf.seek(0)
 
         img = Image.open(buf).convert('L').resize((frame_width, frame_height), Image.ANTIALIAS)
         img_array = np.array(img)
         results.append(img_array)
         plt.close()
+    print("Max value:", np.max(audio_samples_frequency))
+    print("Min value:", np.min(audio_samples_frequency))
+    print("Average value:", np.mean(audio_samples_frequency))
     print('results', results[0:10])
-    max_value = max(results)
-    results = [(x/max_value)*255 for x in results]
   
     print('frequency:',results[0:10])
     print('length of frequencies:',len(results))
@@ -169,7 +175,7 @@ def process_video(video_path, max_frames, parameter, skip):
         start = i * frequency_param
         end = start + frequency_param
 
-        frequencies, times, Zxx = signal.stft(audio_samples_frequency[start:end], fs=int(fps*frequency_param))
+        frequencies, times, Zxx = signal.stft(y=audio_samples_frequency[start:end], fs=round(fps*frequency_param))
         mag = np.abs(Zxx)
         sum_mag = np.sum(mag, axis=-1)
         max_freq = frequencies[np.argmax(sum_mag)]

@@ -56,3 +56,11 @@ Afterwards, go to the detect_pose directory and execute the following command. B
 pip install -r requirements.txt
 python detect_pose.py --video_path <動画データが入っているディレクトリのパス>
 ```
+
+## install required module
+```
+apt-get update
+apt-get install -y libgl1-mesa-glx
+apt-get install -y libglib2.0-0
+apt-get install ffmpeg
+```
