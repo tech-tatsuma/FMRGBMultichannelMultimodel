@@ -67,7 +67,7 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
         audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
     elif np.issubdtype(audio_samples.dtype, np.floating):
         audio_samples = audio_samples / np.finfo(audio_samples.dtype).max
-
+    process_bar = tqdm(total=total_frames)
     # 周波数情報を離散フーリエ変換で取得する
     results = []
     for i in range(int(total_frames)):
@@ -75,8 +75,6 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
         end = start + frequency_param
 
         S = librosa.feature.melspectrogram(y=audio_samples_frequency[start:end], sr=round(fps*frequency_param))
-        if i%500==0:
-            print(S)
         plt.figure(figsize=(3,3))
         # データをdB単位に変換
         S_dB = librosa.power_to_db(S, ref=np.max)
@@ -91,13 +89,7 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
         img_array = np.array(img)
         results.append(img_array)
         plt.close()
-    print("Max value:", np.max(audio_samples_frequency))
-    print("Min value:", np.min(audio_samples_frequency))
-    print("Average value:", np.mean(audio_samples_frequency))
-    print('results', results[0:10])
-  
-    print('frequency:',results[0:10])
-    print('length of frequencies:',len(results))
+        process_bar.update(1)
 
     # 音声データの最大振幅を取得
     max_amplitude = np.max(np.abs(audio_samples))
@@ -180,12 +172,8 @@ def process_video(video_path, max_frames, parameter, skip):
         sum_mag = np.sum(mag, axis=-1)
         max_freq = frequencies[np.argmax(sum_mag)]
         results.append(max_freq)
-    print('results', results[0:10])
     max_value = max(results)
     results = [(x/max_value)*255 for x in results]
-  
-    print('frequency:',results[0:10])
-    print('length of frequencies:',len(results))
 
     # 音声データの最大振幅を取得
     max_amplitude = np.max(np.abs(audio_samples))
