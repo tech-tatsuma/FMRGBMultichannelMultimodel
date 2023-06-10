@@ -1,6 +1,7 @@
 import cv2
 import torch
 import argparse
+import numpy as np
 
 def visualize(opt):
     data_name = opt.target
@@ -27,7 +28,7 @@ def visualize(opt):
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--target',type=str, required=True, help='pt data')
-    parser.add_argument('--result',type=str, required=True, help='result_path')
+    parser.add_argument('--result',type=str, help='result_path')
     opt = parser.parse_args()
     print(opt)
     print('-----biginning processing-----')

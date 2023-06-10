@@ -79,7 +79,7 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
         plt.axis('off')
 
         buf = io.BytesIO()
-        plt.savefig(bufm format='png')
+        plt.savefig(bufm, format='png')
         buf.seek(0)
 
         img = Image.open(buf).convert('L').resize((frame_width, frame_height), Image.ANTIALIAS)
@@ -119,8 +119,8 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
             frame = np.dstack((frame, amp_channel, spectrogram_channel))
             # frames配列に追加
             frames.append(frame)
-            frame_count += 1
-            pbar.update(1)
+        frame_count += 1
+        pbar.update(1)
     # frames配列を構成する
     frames = np.stack(frames)
 
@@ -143,12 +143,12 @@ def process_video(video_path, max_frames, parameter, skip):
     frequency_param = parameter
     # 周波数を計算するための音声配列を作る作業    
     # 一秒間にfps*frequency_param個の音声データをサンプリングする
-    audio = audio.set_frame_rate(int(fps*frequency_param))
+    audio = audio.set_frame_rate(round(fps*frequency_param))
     audio_sample_frequency_rate = audio.frame_rate
     audio_samples_frequency = np.array(audio.get_array_of_samples())
 
     # 振幅情報を取るための音声配列を作る作業
-    desired_sample_rate = int(fps)
+    desired_sample_rate = round(fps)
     audio = audio.set_frame_rate(desired_sample_rate)
     audio_sample_rate = audio.frame_rate
     audio_samples = np.array(audio.get_array_of_samples())
@@ -171,7 +171,8 @@ def process_video(video_path, max_frames, parameter, skip):
 
         frequencies, times, Zxx = signal.stft(audio_samples_frequency[start:end], fs=int(fps*frequency_param))
         mag = np.abs(Zxx)
-        max_freq = frequencies(np.argmax(mag))
+        sum_mag = np.sum(mag, axis=-1)
+        max_freq = frequencies[np.argmax(sum_mag)]
         results.append(max_freq)
     print('results', results[0:10])
     max_value = max(results)
@@ -206,8 +207,9 @@ def process_video(video_path, max_frames, parameter, skip):
             frame = np.dstack((frame, amp_channel, spectrogram_channel))
             # frames配列に追加
             frames.append(frame)
-            frame_count += 1
-            pbar.update(1)
+        frame_count += 1
+        pbar.update(1)
+
     # frames配列を構成する
     frames = np.stack(frames)
 
