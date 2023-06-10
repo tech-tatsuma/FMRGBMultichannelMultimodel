@@ -47,12 +47,12 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
     frequency_param = parameter
     # 周波数を計算するための音声配列を作る作業    
     # 一秒間にfps*frequency_param個の音声データをサンプリングする
-    audio = audio.set_frame_rate(int(fps*frequency_param))
+    audio = audio.set_frame_rate(round(fps*frequency_param))
     audio_sample_frequency_rate = audio.frame_rate
     audio_samples_frequency = np.array(audio.get_array_of_samples())
 
     # 振幅情報を取るための音声配列を作る作業
-    desired_sample_rate = int(fps)
+    desired_sample_rate = round(fps)
     audio = audio.set_frame_rate(desired_sample_rate)
     audio_sample_rate = audio.frame_rate
     audio_samples = np.array(audio.get_array_of_samples())
