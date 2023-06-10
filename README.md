@@ -3,7 +3,13 @@ The model is trained by creating video data with sound frequencies and amplitude
 The network uses a three-dimensional convolutional neural network.
 
 ## Usage
-1. Creation of data sets
+1. resize mp4 data
+```
+python resize_video.py --target <ターゲットフォルダ> --mag <解像度の減少度合い>
+```
+When the resolution is 3, the vertical and horizontal resolution is 1/3 each.
+
+2. Creation of data sets
 ```
 python create_fmrgbdata.py --target <mp4データが格納されているディレクトリーパス> --audiomethod <simple or mel> --frequency_param <周波数解析パラメータ（int）> --skip <ループをスキップする回数（int）>
 ```
@@ -13,11 +19,11 @@ audiomethod: Option to analyse speech data with a simple spectrogram or with a m
 
 frequency_param: Parameters used for frequency analysis. Specified as integer type.
     
-2. Data visualisation
+3. Data visualisation
 ```
 python visualize.py --target <ptファイル>
 ```
-3. FMRGB multi-channel model training.
+4. FMRGB multi-channel model training.
 ```
 python train.py --data <csvデータ> --epochs <学習回数> --test_size <テストデータの割合指定> --patience <早期終了パラメータ>
 ```
