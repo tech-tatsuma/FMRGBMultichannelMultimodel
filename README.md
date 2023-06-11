@@ -35,7 +35,7 @@ SIMPLE SPECTROGRAM
 
 2. Calculation of spectrograms：np.abs() is used to calculate an amplitude spectrogram from the STFT results. This shows the amplitude of the audio signal at each frame and frequency.
 
-3. The frequencies with the highest amplitude (most affected by the sound) are taken from the results calculated in 2.
+3. The frequencies with the highest amplitude are taken from the results calculated in 2.
 
 4. The results calculated by the above methods are scaled to 0~255 and embedded in the image.
 
