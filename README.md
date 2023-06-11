@@ -15,7 +15,7 @@ python create_fmrgbdata.py --target <mp4データが格納されているディ�
 ```
 target: Specification of the directory containing the video data to be converted to fmrgb data.
 
-audiomethod: Option to analyse speech data with a simple spectrogram or with a melspectrogram.
+audiomethod: Option to analyse audio data with a simple spectrogram or with a melspectrogram.
 
 frequency_param: Parameters used for frequency analysis. Specified as integer type.
     
