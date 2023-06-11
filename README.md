@@ -45,7 +45,7 @@ MELSPECTROGRAM
 
 2. Use librosa.feature.melspectrogram to compute the melspectrogram of the speech data.
 
-3. Save the mel spectrogram as an image and save its value as a NumPy array as the fifth channel image.
+3. Save the melspectrogram as an image and save its value as a NumPy array as the fifth channel image.
 
 ### How to align data lengths
 1. Examines all videos in the directory and retrieves the frame count of the video with the highest frame count.
