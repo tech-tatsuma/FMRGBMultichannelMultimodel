@@ -7,7 +7,7 @@ The network uses a three-dimensional convolutional neural network.
 ```
 python resize_video.py --target <ターゲットフォルダ> --mag <解像度の減少度合い>
 ```
-When the resolution is 3, the vertical and horizontal resolution is 1/3 each.
+When the mag is 3, the vertical and horizontal resolution is 1/3 each.
 
 ### Creation of data sets
 ```
@@ -33,7 +33,7 @@ SIMPLE SPECTROGRAM
 
 1. Calculation of the STFT (Short Time Fourier Transform)：The librosa.stft(audio_samples) function is used to perform a short-time Fourier transform. It divides the audio signal into small chunks (frames) and applies the Fourier transform to each frame to produce a complex result.
 
-2. Calculation of spectrograms：np.abs() is used to calculate an amplitude spectrogram from the STFT results. This shows the amplitude of the speech signal at each frame and frequency.
+2. Calculation of spectrograms：np.abs() is used to calculate an amplitude spectrogram from the STFT results. This shows the amplitude of the audio signal at each frame and frequency.
 
 3. The frequencies with the highest amplitude (most affected by the sound) are taken from the results calculated in 2.
 
