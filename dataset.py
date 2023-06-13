@@ -29,7 +29,7 @@ class VideoDataset(Dataset):
             padding = torch.zeros((tensor.shape[0], size_diff, tensor.shape[2], tensor.shape[3]))
             tensor = torch.cat([tensor, padding], dim=1)
         if self.transform:
-            tensor = self.transform(tensor)
+            tensor = self.apply_transform(tensor)
         return tensor, label
         
     def apply_transform(self, tensor):
