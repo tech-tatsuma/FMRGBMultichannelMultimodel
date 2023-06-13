@@ -92,14 +92,14 @@ def train(opt):
             print('Early stopping due to validation loss not improving for {} epochs'.format(patience))
             break
 
-        # Plotting the training progress
-        plt.figure(figsize=(10, 5))
-        plt.plot(train_losses, label='Training loss')
-        plt.plot(val_losses, label='Validation loss')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.savefig('training_validation_loss.png')
+    # Plotting the training progress
+    plt.figure(figsize=(10, 5))
+    plt.plot(train_losses, label='Training loss')
+    plt.plot(val_losses, label='Validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig('training_validation_loss.png')
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
