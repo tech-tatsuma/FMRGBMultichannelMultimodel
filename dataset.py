@@ -30,3 +30,12 @@ class VideoDataset(Dataset):
         if self.transform:
             tensor = self.transform(tensor)
         return tensor, label
+        
+    def apply_transform(self, tensor):
+        C, T, H, W = tensor.shape
+        tensor_transformed = torch.zeros_like(tensor)
+        for t in range(T):
+            img = F.to_pil_image(tensor[:, t])
+            img = self.transform(img)
+            tensor_transformed[:, t] = F.to_tensor(img)
+        return tensor_transformed
