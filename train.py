@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 def train(opt):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     data_file = opt.data
     epochs = opt.epochs
     test_size = opt.test_size
@@ -33,7 +35,7 @@ def train(opt):
     val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
 
     # Create the model
-    model = ConvNet3D()
+    model = ConvNet3D().to(device)
 
     # Define a loss function and optimizer
     criterion = nn.MSELoss()  # Use MSE for regression
@@ -53,6 +55,7 @@ def train(opt):
         val_loss = 0
         model.train()
         for i, (inputs, labels) in tqdm(enumerate(train_loader, 0)):
+            inputs, labels = inputs.to(device), labels.to(device)
             # Zero the parameter gradients
             optimizer.zero_grad()
 
@@ -70,6 +73,7 @@ def train(opt):
         val_loss = 0
         with torch.no_grad():
             for i (inputs, labels) in tqdm(enumerate(val_loader, 0)):
+                inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
                 val_loss += criterion(outputs, labels).item()
 
