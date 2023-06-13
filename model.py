@@ -11,14 +11,23 @@ class ConvNet3D(nn.Module):
             nn.MaxPool3d((2, 2, 2)),
             # Continue with more layers as needed...
         )
-        self.fc = nn.Sequential(
-            nn.Linear(16*32*32*32, 128),
-            nn.ReLU(),
-            nn.Linear(128, 1)  # Single output for regression
-        )
+        self.fc = None
 
-    def forward(self, x):
+    def forward_features(self, x):
         x = self.conv(x)
-        x = x.view(x.size(0), -1)
+        return x.view(x.size(0), -1)
+        
+    def forward(self, x):
+        if self.fc is None:
+            # Get output shape of conv layers
+            out = self.forward_features(x)
+            out_shape = out.shape[-1]
+            # Define fc layer with the obtained output shape
+            self.fc = nn.Sequential(
+                nn.Linear(out_shape, 128),
+                nn.ReLU(),
+                nn.Linear(128, 1)  # Single output for regression
+            ).to(x.device)
+        x = self.forward_features(x)
         x = self.fc(x)
         return x
