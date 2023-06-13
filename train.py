@@ -73,7 +73,7 @@ def train(opt):
         model.eval()
         val_loss = 0
         with torch.no_grad():
-            for i (inputs, labels) in tqdm(enumerate(val_loader, 0)):
+            for i, (inputs, labels) in tqdm(enumerate(val_loader, 0)):
                 inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
                 val_loss += criterion(outputs, labels).item()
