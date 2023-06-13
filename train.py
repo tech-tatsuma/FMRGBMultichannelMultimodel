@@ -17,8 +17,8 @@ def train(opt):
     patience = opt.patience
     # Create your transform
     transform = transforms.Compose([
-        transforms.RandomRotation(15), # Random rotation within the range of [-15, 15] degrees
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # Normalization parameters for pretrained models on ImageNet
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) 
     ])
 
     # Load CSV file
