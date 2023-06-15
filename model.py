@@ -14,7 +14,9 @@ class ConvNet3D(nn.Module):
         self.fc = None
 
     def forward_features(self, x):
+        print("Input shape:", x.shape, "Type:", x.dtype)  # Add this line
         x = self.conv(x)
+        print("After conv shape:", x.shape, "Type:", x.dtype)  # And this line
         return x.view(x.size(0), -1)
         
     def forward(self, x):
@@ -22,12 +24,15 @@ class ConvNet3D(nn.Module):
             # Get output shape of conv layers
             out = self.forward_features(x)
             out_shape = out.shape[-1]
+            print("Flattened output shape:", out_shape)
             # Define fc layer with the obtained output shape
             self.fc = nn.Sequential(
                 nn.Linear(out_shape, 128),
                 nn.ReLU(),
-                nn.Linear(128, 1)  # Single output for regression
+                nn.Linear(128, 2)  # Single output for regression
             ).to(x.device)
         x = self.forward_features(x)
+        print("After forward_features shape:", x.shape, "Type:", x.dtype)  # And this line
         x = self.fc(x)
+        print("After fc shape:", x.shape, "Type:", x.dtype)  # And this line
         return x

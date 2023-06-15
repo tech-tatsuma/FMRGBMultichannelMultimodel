@@ -8,6 +8,9 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import argparse
+import os
+import glob
+from torch import nn
 
 def train(opt):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -19,18 +22,22 @@ def train(opt):
     # Create your transform
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) 
+        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) 
     ])
 
     # Load CSV file
-    df = pd.read_csv(data_file)
+    # df = pd.read_csv(data_file)
+    file_list = glob.glob(os.path.join(opt.data, '**', '*.pt'), recursive=True)
+    train_files, test_files = train_test_split(file_list, test_size=opt.test_size, random_state=42)
+    train_files, val_files = train_test_split(train_files, test_size=opt.test_size, random_state=42)
 
     # Split the dataset into train and test
-    train_df, val_df = train_test_split(df, test_size=test_size)
+    # train_df, val_df = train_test_split(df, test_size=test_size)
 
     # Create your datasets
-    train_dataset = VideoDataset(train_df, transform=transform)
-    val_dataset = VideoDataset(val_df, transform=transform)
+    train_dataset = VideoDataset(train_files, transform=transform)
+    val_dataset = VideoDataset(val_files, transform=transform)
+    test_dataset = VideoDataset(test_files, transform=transform)
 
     # Create your dataloaders
     train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
@@ -40,7 +47,7 @@ def train(opt):
     model = ConvNet3D().to(device)
 
     # Define a loss function and optimizer
-    criterion = nn.MSELoss()  # Use MSE for regression
+    criterion = nn.CrossEntropyLoss()  # Use MSE for regression
     optimizer = torch.optim.Adam(model.parameters())
 
     # Initialize variables for Early Stopping
@@ -60,8 +67,10 @@ def train(opt):
             inputs, labels = inputs.to(device), labels.to(device)
             # Zero the parameter gradients
             optimizer.zero_grad()
-
+            print(inputs.shape)
             # Forward + backward + optimize
+            if inputs.dtype != torch.float32:
+                inputs = inputs.float()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
@@ -76,6 +85,8 @@ def train(opt):
         with torch.no_grad():
             for i, (inputs, labels) in tqdm(enumerate(val_loader, 0)):
                 inputs, labels = inputs.to(device), labels.to(device)
+                if inputs.dtype != torch.float32:
+                    inputs = inputs.float()
                 outputs = model(inputs)
                 val_loss += criterion(outputs, labels).item()
 
@@ -114,4 +125,3 @@ if __name__=='__main__':
     print('-----biginning training-----')
     train(opt)
     print('-----completing training-----')
-

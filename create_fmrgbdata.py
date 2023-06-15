@@ -42,9 +42,12 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
     print('fps: ', fps)
     # ビデオのフレームの総数の情報を取得する
     total_frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
-
-    # mp4データから音声データを取り出す
-    audio = AudioSegment.from_file(video_path, format="mp4") 
+    try:
+        # mp4データから音声データを取り出す
+        audio = AudioSegment.from_file(video_path, format="mp4") 
+    except:
+        print(f"Could not extract audio from {video_path}. Skipping this video.")
+        return
     frequency_param = parameter
     # 周波数を計算するための音声配列を作る作業    
     # 一秒間にfps*frequency_param個の音声データをサンプリングする
@@ -62,6 +65,7 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
     if audio.channels == 2:
         audio_samples = stereo_to_mono(audio_samples)
         audio_samples_frequency = stereo_to_mono(audio_samples_frequency)
+    audio_samples_frequency = audio_samples_frequency.astype(np.float32)
 
     if np.issubdtype(audio_samples.dtype, np.integer):
         audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
@@ -93,6 +97,8 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
 
     # 音声データの最大振幅を取得
     max_amplitude = np.max(np.abs(audio_samples))
+    if max_amplitude == 0:
+        max_amplitude = 1
     # Iterate over each frame in the video
     frames = []
     pbar = tqdm(total=total_frames)
@@ -135,9 +141,12 @@ def process_video(video_path, max_frames, parameter, skip):
     print('fps: ', fps)
     # ビデオのフレームの総数の情報を取得する
     total_frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
-
-    # mp4データから音声データを取り出す
-    audio = AudioSegment.from_file(video_path, format="mp4") 
+    try:
+        # mp4データから音声データを取り出す
+        audio = AudioSegment.from_file(video_path, format="mp4") 
+    except:
+        print(f"Could not extract audio from {video_path}. Skipping this video.")
+        return
     frequency_param = parameter
     # 周波数を計算するための音声配列を作る作業    
     # 一秒間にfps*frequency_param個の音声データをサンプリングする
@@ -155,6 +164,7 @@ def process_video(video_path, max_frames, parameter, skip):
     if audio.channels == 2:
         audio_samples = stereo_to_mono(audio_samples)
         audio_samples_frequency = stereo_to_mono(audio_samples_frequency)
+    audio_samples_frequency = audio_samples_frequency.astype(np.float32)
 
     if np.issubdtype(audio_samples.dtype, np.integer):
         audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
@@ -177,6 +187,8 @@ def process_video(video_path, max_frames, parameter, skip):
 
     # 音声データの最大振幅を取得
     max_amplitude = np.max(np.abs(audio_samples))
+    if max_amplitude == 0:
+        max_amplitude = 1.0
     # Iterate over each frame in the video
     frames = []
     pbar = tqdm(total=total_frames)
