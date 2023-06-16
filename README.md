@@ -1,4 +1,4 @@
-# FMRGBMultichannelMultimodel
+# FMRGBMultichannelMultimodel(Regression Problem Version)
 The model is trained by creating video data with sound frequencies and amplitudes and image RGB information as channels.
 The network uses a three-dimensional convolutional neural network.
 
