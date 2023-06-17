@@ -9,13 +9,14 @@ from torchvision.transforms import Resize
 
 class VideoDataset(Dataset):
     # def __init__(self, df, transform=None, target_frames=64):
-    def __init__(self, file_list, transform=None, target_frames=64, target_size=(224, 224)):
+    def __init__(self, file_list, transform=None, target_frames=64, target_size=(224, 224), isconvon=True):
         self.file_list = file_list
         self.transform = transform
         self.target_frames = target_frames
         self.target_size = target_size
         self.label_mapping = {"NonViolence": 0, "Violence": 1}
         self.num_channels = 5
+        self.isconvon = isconvon
 
     def __len__(self):
         # return len(self.df)
@@ -47,7 +48,10 @@ class VideoDataset(Dataset):
         print('1:',tensor.shape[1])
         print('2:',tensor.shape[2])
         print('3:',tensor.shape[3])
-        tensor = tensor.permute(3, 0, 1, 2)
+        if self.isconvon == True:
+            tensor = tensor.permute(3, 0, 1, 2)
+        if self.isconvon == False:
+            tensor = tensor.permute(0, 3, 1, 2)
         print(tensor.shape)
         return tensor, label
 
