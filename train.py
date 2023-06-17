@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D
+from model import ConvNet3D, ConvLSTM
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -19,6 +19,7 @@ def train(opt):
     epochs = opt.epochs
     test_size = opt.test_size
     patience = opt.patience
+    learningmethod = opt.learnmethod
     # Create your transform
     transform = transforms.Compose([
         transforms.ToTensor(),
@@ -34,17 +35,26 @@ def train(opt):
     # Split the dataset into train and test
     # train_df, val_df = train_test_split(df, test_size=test_size)
 
-    # Create your datasets
-    train_dataset = VideoDataset(train_files, transform=transform)
-    val_dataset = VideoDataset(val_files, transform=transform)
-    test_dataset = VideoDataset(test_files, transform=transform)
+    if learningmethod=='conv3d':
+        # Create your datasets
+        train_dataset = VideoDataset(train_files, transform=transform)
+        val_dataset = VideoDataset(val_files, transform=transform)
+        test_dataset = VideoDataset(test_files, transform=transform)
+    else:
+        # Create your datasets
+        train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
+        val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
+        test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
 
     # Create your dataloaders
     train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
-
-    # Create the model
-    model = ConvNet3D().to(device)
+    if learningmethod=='conv3d':
+        # Create the model
+        model = ConvNet3D().to(device)
+    else:
+        sample_size = (4, 5, 224, 224)
+        model = ConvLSTM(sample_size).to(device)
 
     # Define a loss function and optimizer
     criterion = nn.CrossEntropyLoss()  # Use MSE for regression
@@ -64,6 +74,7 @@ def train(opt):
         val_loss = 0
         model.train()
         for i, (inputs, labels) in tqdm(enumerate(train_loader, 0)):
+            print(inputs.shape)
             inputs, labels = inputs.to(device), labels.to(device)
             # Zero the parameter gradients
             optimizer.zero_grad()
@@ -97,7 +108,7 @@ def train(opt):
 
             # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-            torch.save(model.state_dict(), 'model.pt')
+            torch.save(model.state_dict(), 'lstm_model.pt')
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
         # If the validation loss didn't decrease for 'patience' epochs, stop the training
@@ -112,7 +123,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig('training_validation_loss.png')
+    plt.savefig('conv_training_validation_loss.png')
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
@@ -120,6 +131,7 @@ if __name__=='__main__':
     parser.add_argument('--epochs',type=int, required=True, help='epochs')
     parser.add_argument('--test_size', type=float, required=True, default=0.2, help='testdata_ratio')
     parser.add_argument('--patience', type=int, required=True, default=5, help='patience')
+    parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm')
     opt = parser.parse_args()
     print(opt)
     print('-----biginning training-----')
