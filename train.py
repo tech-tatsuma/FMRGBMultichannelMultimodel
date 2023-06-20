@@ -108,7 +108,7 @@ def train(opt):
 
             # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-            torch.save(model.state_dict(), 'lstm_model.pt')
+            torch.save(model.state_dict(), 'cnn_nolimit_model.pt')
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
         # If the validation loss didn't decrease for 'patience' epochs, stop the training
@@ -123,7 +123,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig('conv_training_validation_loss.png')
+    plt.savefig('conv3D_training_validation_loss_nolimit.png')
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
