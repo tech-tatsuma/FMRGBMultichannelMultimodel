@@ -38,36 +38,71 @@ class ConvNet3D(nn.Module):
         print("After fc shape:", x.shape, "Type:", x.dtype)  # And this line
         return x
 
+import torch
+from torch import nn
+
+class ConvLSTMCell(nn.Module):
+
+    def __init__(self, input_dim, hidden_dim, kernel_size, bias):
+        """
+        Initialize ConvLSTM cell.
+        
+        Parameters
+        ----------
+        input_dim : int
+            Number of channels of input tensor.
+        hidden_dim : int
+            Number of channels of hidden state.
+        kernel_size : (int, int)
+            Size of the convolutional kernel.
+        bias : bool
+            Whether or not to add the bias.
+        """
+
+        super(ConvLSTMCell, self).__init__()
+
+        self.input_dim  = input_dim
+        self.hidden_dim = hidden_dim
+
+        self.kernel_size = kernel_size
+        self.padding     = kernel_size[0] // 2, kernel_size[1] // 2
+        self.bias        = bias
+
+        self.conv = nn.Conv2d(in_channels=self.input_dim + self.hidden_dim,
+                              out_channels=4 * self.hidden_dim,
+                              kernel_size=self.kernel_size,
+                              padding=self.padding,
+                              bias=self.bias)
+
+    def forward(self, input_tensor, cur_state):
+        # Your implementation here
+        pass
+
 class ConvLSTM(nn.Module):
-    def __init__(self, sample_size, num_classes=2):
+
+    """
+    Parameters:
+        input_dim: Number of channels in input
+        hidden_dim: Number of hidden channels
+        kernel_size: Size of kernel in convolutions
+        num_layers: Number of LSTM layers stacked on each other
+        batch_first: Whether or not dimension 0 is the batch or not
+        bias: Bias or no bias in Convolution
+        return_all_layers: Return the list of computations for all layers
+        Note: Will do same padding.
+    Input:
+        A tensor of size B, T, C, H, W or T, B, C, H, W
+    Output:
+        A final hidden state of the next LSTM cell and/or list containing the output features from the last LSTM cell of each layer, list containing the hidden state and cell state for all timesteps.
+    """
+
+    def __init__(self, input_dim, hidden_dim, kernel_size, num_layers,
+                 batch_first=False, bias=True, return_all_layers=False):
         super(ConvLSTM, self).__init__()
 
-        self.cnn = nn.Sequential(
-            nn.Conv2d(5, 16, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            # Add more layers as needed...
-        )
+        # Your implementation here
+        pass
 
-        sample_output = self.cnn(torch.zeros(*sample_size))
-        cnn_output_size = sample_output.view(sample_output.size(0), -1).size(1)
-
-        self.rnn = nn.LSTM(
-            input_size=cnn_output_size,  # This should match the output of your CNN
-            hidden_size=64,  # You can specify your own number
-            num_layers=1,  # Number of LSTM layer
-            batch_first=True  # input & output will has batch size as 1s dimension
-        )
-
-        self.fc = nn.Linear(64, num_classes)
-
-    def forward(self, x):
-        batch_size, timesteps, C, H, W = x.size()
-        cnn_out = torch.zeros(batch_size, timesteps, self.rnn.input_size).to(x.device)  # This should match the output of your CNN
-        for i in range(timesteps):
-            cnn_out[:, i, :] = self.cnn(x[:, i, :, :, :]).reshape(batch_size, -1)
-
-        r_out, _ = self.rnn(cnn_out)
-        r_out2 = self.fc(r_out[:, -1, :])
-        
-        return r_out2
+    def forward(self, input_tensor, hidden_state=None):
+        # Implement forward pass
+        pass
