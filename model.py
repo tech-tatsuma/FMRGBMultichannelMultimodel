@@ -1,5 +1,6 @@
 from torch import nn
 import torch
+import torch
 
 # 3D Convolutional Neural Network
 class ConvNet3D(nn.Module):

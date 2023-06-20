@@ -73,3 +73,6 @@ class VideoDataset(Dataset):
                 tensor_transformed[t, :, :, c] = img  # the size of img must be (self.target_size[1], self.target_size[0]) now
         return tensor_transformed
 
+
+        return tensor_transformed
+
