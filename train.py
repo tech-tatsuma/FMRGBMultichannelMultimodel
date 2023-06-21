@@ -40,11 +40,14 @@ def train(opt):
         train_dataset = VideoDataset(train_files, transform=transform)
         val_dataset = VideoDataset(val_files, transform=transform)
         test_dataset = VideoDataset(test_files, transform=transform)
-    else:
+    elif learningmethod=='convlstm':
         # Create your datasets
         train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
         val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
         test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
+    else:
+        print('error: 入力が不適切です')
+        return
 
     # Create your dataloaders
     train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
@@ -52,9 +55,11 @@ def train(opt):
     if learningmethod=='conv3d':
         # Create the model
         model = ConvNet3D().to(device)
+    elif learningmethod=='convlstm':
+        model = ConvLSTM(input_dim=5, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3).to(device)
     else:
-        sample_size = (4, 5, 224, 224)
-        model = ConvLSTM(sample_size).to(device)
+        print('error: 入力が不適切です')
+        return
 
     # Define a loss function and optimizer
     criterion = nn.CrossEntropyLoss()  # Use MSE for regression
@@ -108,11 +113,7 @@ def train(opt):
 
             # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-<<<<<<< HEAD
-            torch.save(model.state_dict(), 'cnn_nolimit_model.pt')
-=======
-            torch.save(model.state_dict(), 'lstm_model.pt')
->>>>>>> 9c9b5ce1bf84b047dd5db9607b14954fe99a0449
+            torch.save(model.state_dict(), 'cnn_model.pt')
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
         # If the validation loss didn't decrease for 'patience' epochs, stop the training
@@ -127,11 +128,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-<<<<<<< HEAD
-    plt.savefig('conv3D_training_validation_loss_nolimit.png')
-=======
-    plt.savefig('conv_training_validation_loss.png')
->>>>>>> 9c9b5ce1bf84b047dd5db9607b14954fe99a0449
+    plt.savefig('conv3D_training_validation_nolimitloss.png')
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()

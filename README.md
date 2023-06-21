@@ -1,32 +1,48 @@
 # FMRGBMultichannelMultimodel(Binary Problem Version)
 The model is trained by creating video data with sound frequencies and amplitudes and image RGB information as channels.
-The network uses a three-dimensional convolutional neural network.
+The network uses a three-dimensional convolutional neural network and convLSTM neural network.
 
 ## Usage
 ### resize mp4 data
 ```
-python resize_video.py --target <ターゲットフォルダ> --mag <解像度の減少度合い>
+python resize_video.py --target <targetfolder> --mag <degree of resolution reduction>
 ```
 When the mag is 3, the vertical and horizontal resolution is 1/3 each.
 
+### delete not resized mp4 data
+```
+python delete_not_resized.py --target <targetfolder>
+```
+Delete all unresized mp4 data in the target folder.
+
 ### Creation of data sets
 ```
-python create_fmrgbdata.py --target <mp4データが格納されているディレクトリーパス> --audiomethod <simple or mel> --frequency_param <周波数解析パラメータ（int）> --skip <ループをスキップする回数（int）>
+python create_fmrgbdata.py --target <data folder> --audiomethod <simple or mel> --frequency_param <Frequency analysis parameters（int）> --skip <each number of skip（int）>
 ```
-target: Specification of the directory containing the video data to be converted to fmrgb data.
+target: Specification of the directory containing the video data (pt format data) to be converted to fmrgb data.
 
 audiomethod: Option to analyse audio data with a simple spectrogram or with a melspectrogram.
 
 frequency_param: Parameters used for frequency analysis. Specified as integer type.
     
+### delete all mp4 data
+```
+python delete_allmp4.py --target <target folder>
+```
+Delete all mp4 data in the target folder.
+This is useful to reduce the capacity in the folder.
+
 ### Data visualisation
 ```
 python visualize.py --target <ptファイル>
 ```
+Program to visualise 5 channel pt data.
 ### FMRGB multi-channel model training.
 ```
-python train.py --data <csvデータ> --epochs <学習回数> --test_size <テストデータの割合指定> --patience <早期終了パラメータ>
+python train.py --data <csvデータ> --epochs <学習回数> --test_size <テストデータの割合指定> --patience <早期終了パラメータ> --learnmethod <conv3d or convlstm>
 ```
+Main program to train data. In this program, dataset.py and model.py are called and use them effeciently.
+In the model.py, conv3d and convlstm are defined. You can specify the method by using the learnmethod option.
 ##  Explanation of the program
 ### Imaging of audio data
 SIMPLE SPECTROGRAM
