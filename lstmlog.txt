@@ -1,0 +1,1693 @@
+Namespace(data='violence_datasets', epochs=100, learnmethod='convlstm', patience=7, test_size=0.2)
+-----biginning training-----
+0it [00:00, ?it/s]1it [07:53, 473.70s/it]2it [15:24, 460.35s/it]3it [23:00, 458.17s/it]4it [30:18, 450.41s/it]5it [38:03, 455.41s/it]6it [45:39, 455.61s/it]7it [53:22, 458.18s/it]8it [1:01:06, 459.95s/i99it [1:08:47, 460.48s/i110it [1:16:32, 461.65s/i111it [1:24:14, 461.84s/i112it [1:32:06, 464.79s/i113it [1:39:48, 464.08s/i114it [1:47:30, 463.37s/i115it [1:55:08, 461.99s/i116it [2:02:50, 461.94s/i117it [2:10:30, 461.27s/i118it [2:18:13, 461.78s/i119it [2:25:57, 462.37s/i220it [2:33:41, 462.93s/i221it [2:41:23, 462.56s/i222it [2:49:06, 462.82s/i223it [2:56:49, 462.94s/i224it [3:04:31, 462.56s/i225it [3:12:13, 462.32s/i226it [3:19:55, 462.44s/it]0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 227it [3:27:36, 461.96s/i228it [3:35:18, 461.98s/i229it [3:42:59, 461.62s/i330it [3:50:45, 462.81s/i331it [3:58:27, 462.75s/i332it [4:06:09, 462.34s/i333it [4:13:50, 461.95s/i334it [4:21:29, 461.21s/i335it [4:29:08, 460.59s/i336it [4:36:49, 460.68s/i337it [4:44:32, 461.36s/i338it [4:52:13, 461.20s/i339it [4:59:56, 461.70s/i440it [5:07:35, 461.05s/i441it [5:15:15, 460.65s/i442it [5:22:58, 461.25s/i443it [5:30:39, 461.28s/i444it [5:38:21, 461.61s/i445it [5:46:05, 462.29s/i446it [5:53:48, 462.25s/i447it [6:01:30, 462.44s/i448it [6:09:13, 462.53s/i449it [6:16:57, 463.06s/i550it [6:24:42, 463.42s/i551it [6:32:25, 463.39s/i552it [6:40:11, 464.11s/it]torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: 53it [6:47:55, 464.10s/i554it [6:55:40, 464.45s/i555it [7:03:29, 465.70s/i556it [7:11:12, 464.93s/i557it [7:19:03, 466.78s/i558it [7:26:52, 467.54s/i559it [7:34:36, 466.46s/i660it [7:42:21, 465.85s/i661it [7:50:01, 464.19s/it]]62it [7:14:49, 466.68s/it]63it [7:22:31, 465.35s/it]64it [7:30:13, 464.23s/it]65it [7:38:03, 465.95s/it]torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+torch.Size([4, 64, 5, 224, 224])
+Output shape before reshaping: torch.Size([4, 64, 224, 224])
+outputs: torch.Size([4, 2])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+torch.Size([64, 5, 224, 224])
+0: 64
+1: 224
+2: 224
+3: 5
+66it [7:45:47, 465.50s/it]67it [7:53:30, 464.51s/it]68it [8:01:07, 462.33s/it]

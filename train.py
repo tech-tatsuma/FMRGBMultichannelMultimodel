@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM
+from model import ConvNet3D, ConvLSTM_FC
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -26,25 +26,22 @@ def train(opt):
         # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) 
     ])
 
-    # Load CSV file
-    # df = pd.read_csv(data_file)
     file_list = glob.glob(os.path.join(opt.data, '**', '*.pt'), recursive=True)
     train_files, test_files = train_test_split(file_list, test_size=opt.test_size, random_state=42)
     train_files, val_files = train_test_split(train_files, test_size=opt.test_size, random_state=42)
-
-    # Split the dataset into train and test
-    # train_df, val_df = train_test_split(df, test_size=test_size)
 
     if learningmethod=='conv3d':
         # Create your datasets
         train_dataset = VideoDataset(train_files, transform=transform)
         val_dataset = VideoDataset(val_files, transform=transform)
         test_dataset = VideoDataset(test_files, transform=transform)
+
     elif learningmethod=='convlstm':
         # Create your datasets
         train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
         val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
         test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
+
     else:
         print('error: 入力が不適切です')
         return
@@ -52,11 +49,14 @@ def train(opt):
     # Create your dataloaders
     train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
+
     if learningmethod=='conv3d':
         # Create the model
         model = ConvNet3D().to(device)
+
     elif learningmethod=='convlstm':
-        model = ConvLSTM(input_dim=5, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3).to(device)
+        model = ConvLSTM_FC(input_dim=5, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3).to(device)
+
     else:
         print('error: 入力が不適切です')
         return
@@ -78,16 +78,24 @@ def train(opt):
         train_loss = 0
         val_loss = 0
         model.train()
+
         for i, (inputs, labels) in tqdm(enumerate(train_loader, 0)):
-            print(inputs.shape)
+
             inputs, labels = inputs.to(device), labels.to(device)
             # Zero the parameter gradients
             optimizer.zero_grad()
-            print(inputs.shape)
+
             # Forward + backward + optimize
             if inputs.dtype != torch.float32:
                 inputs = inputs.float()
-            outputs = model(inputs)
+
+            if learningmethod=='conv3d':
+                outputs = model(inputs)
+
+            elif learningmethod=='convlstm':
+                outputs = model(inputs)
+                print('outputs:', outputs.shape)
+
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -98,12 +106,18 @@ def train(opt):
 
         model.eval()
         val_loss = 0
+
         with torch.no_grad():
             for i, (inputs, labels) in tqdm(enumerate(val_loader, 0)):
                 inputs, labels = inputs.to(device), labels.to(device)
                 if inputs.dtype != torch.float32:
                     inputs = inputs.float()
-                outputs = model(inputs)
+                if learningmethod=='conv3d':
+                    outputs = model(inputs)
+                    
+                elif learningmethod=='convlstm':
+                    outputs= model(inputs)
+
                 val_loss += criterion(outputs, labels).item()
 
         val_loss /= len(val_loader)
@@ -113,9 +127,10 @@ def train(opt):
 
             # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-            torch.save(model.state_dict(), 'cnn_model.pt')
+            torch.save(model.state_dict(), 'lstm_model.pt')
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
+            
         # If the validation loss didn't decrease for 'patience' epochs, stop the training
         elif (epoch - val_loss_min_epoch) >= patience:
             print('Early stopping due to validation loss not improving for {} epochs'.format(patience))
@@ -128,7 +143,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig('conv3D_training_validation_nolimitloss.png')
+    plt.savefig('lstm_training_validation_nolimitloss.png')
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
