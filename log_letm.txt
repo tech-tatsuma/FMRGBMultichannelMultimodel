@@ -1,0 +1,3 @@
+Namespace(data='violence_datasets', epochs=100, learnmethod='convlstm', patience=7, test_size=0.2)
+-----biginning training-----
+0it [00:00, ?it/s]1it [01:41, 101.78s/it]2it [02:52, 83.25s/it] 3it [04:16, 83.60s/it]
