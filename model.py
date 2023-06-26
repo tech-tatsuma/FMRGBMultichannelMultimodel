@@ -38,7 +38,7 @@ class ConvLSTMCell(nn.Module):
         super(ConvLSTMCell, self).__init__()
         
         self.input_dim = input_dim # 入力データのチャンネル数
-        self.hidden_dim = hidden_dim // 4 # 隠れ状態のチャンネル数
+        self.hidden_dim = hidden_dim # 隠れ状態のチャンネル数
 
         self.kernel_size = kernel_size # 畳み込みのカーネルのサイズ
         self.padding = kernel_size[0] // 2, kernel_size[1] // 2 # 畳み込みのパディングサイズ

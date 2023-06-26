@@ -1,3 +1,0 @@
-Namespace(data='violence_datasets', epochs=10, learnmethod='convlstm', patience=7, test_size=0.2)
------biginning training-----
-0it [00:00, ?it/s]

@@ -127,7 +127,7 @@ def train(opt):
 
             # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-            torch.save(model.state_dict(), 'lstm_model.pt')
+            torch.save(model.state_dict(), 'lstmnolimit_model.pt')
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
             
