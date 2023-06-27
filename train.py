@@ -46,9 +46,9 @@ def train(opt):
 
     elif learningmethod=='vivit': 
         # Create your datasets
-        train_dataset = VideoDataset(train_files, transform=transform)
-        val_dataset = VideoDataset(val_files, transform=transform)
-        test_dataset = VideoDataset(test_files, transform=transform)
+        train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
+        val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
+        test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
 
     else:
         print('error: 入力が不適切です')
@@ -68,7 +68,7 @@ def train(opt):
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     elif learningmethod=='vivit':
-        model = ViViT(depth=64, num_classes=2).to(device)
+        model = ViViT(image_size=224, patch_size=16, num_classes=10, num_frames=64, in_channels=5).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     else:
@@ -116,6 +116,9 @@ def train(opt):
                 outputs = model(inputs)
                 print('outputs:', outputs.shape)
 
+            elif learningmethod=='vivit':
+                outputs = model(inputs)
+
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -151,7 +154,7 @@ def train(opt):
 
             # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-            torch.save(model.state_dict(), 'lstmnolimit_model1.pt')
+            torch.save(model.state_dict(), 'vivit1.pt')
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
             
@@ -167,7 +170,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig('lstm_training_validation_nolimitloss1.png')
+    plt.savefig('vivit1.png')
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()

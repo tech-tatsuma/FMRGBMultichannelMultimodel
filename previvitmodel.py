@@ -171,3 +171,5 @@ class LCAttention(nn.Module):
         out = rearrange(out, 'b h n d -> b n (h d)')
         out =  self.to_out(out)
         return out
+        
+        
