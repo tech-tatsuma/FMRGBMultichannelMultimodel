@@ -1,6 +1,10 @@
-from torch import nn
+from torch import nn, einsum
 import torch
-import torch
+import torch.nn.functional as f
+from einops import rearrange, repeat
+from einops.layers.torch import Rearrange
+from previvitmodel import Attention, PreNorm, FeedForward  
+
 
 # 3D Convolutional Neural Network
 class ConvNet3D(nn.Module):
@@ -177,3 +181,54 @@ class ConvLSTM_FC(ConvLSTM):
         output = output.reshape(output.size(0), -1)  # 出力をフラットな形に変形
         output = self.fc(output)# 変形後の出力を全結合層に入力
         return output # モデルの出力を返す
+
+class Transformer(nn.Module):
+    def __init__(self, dim, depth, heads, dim_head, mlp_dim, dropout = 0.):
+        super().__init__()
+        self.layers = nn.ModuleList([])
+        self.norm = nn.LayerNorm(dim)
+        for _ in range(depth):
+            self.layers.append(nn.ModuleList([
+                PreNorm(dim, Attention(dim, heads = heads, dim_head = dim_head, dropout = dropout)),
+                PreNorm(dim, FeedForward(dim, mlp_dim, dropout = dropout))
+            ]))
+
+    def forward(self, x):
+        for attn, ff in self.layers:
+            x = attn(x) + x
+            x = ff(x) + x
+        return self.norm(x)
+
+class ViViT(nn.Module):
+    def __init__(self, depth, num_classes, dim = 192, scale = 4, depth_kernel = 3, dropout = 0.):
+        super().__init__()
+        
+        self.space_token = nn.Parameter(torch.randn(1, dim))
+        self.space_transformer = nn.ModuleList([LCAttention(dim, dropout = dropout) for _ in range(depth)])
+
+        self.temporal_token = nn.Parameter(torch.randn(1, dim))
+        self.temporal_transformer = nn.ModuleList([LeFF(dim, scale, depth_kernel) for _ in range(depth)])
+
+        self.mlp_head = nn.Sequential(
+            nn.LayerNorm(dim),
+            nn.Linear(dim, num_classes)
+        )
+
+    def forward(self, x):
+        b, _, d, _, _ = x.shape
+
+        cls_space_tokens = self.space_token.expand(b, -1)
+        x = torch.cat((cls_space_tokens, x.view(b, -1, d)), dim=1)
+
+        for attn in self.space_transformer:
+            x = attn(x)
+
+        cls_temporal_tokens = self.temporal_token.expand(b, -1)
+        x = torch.cat((cls_temporal_tokens, x), dim=2)
+
+        for ff in self.temporal_transformer:
+            x = ff(x)
+
+        x = x.mean(dim=1)
+
+        return self.mlp_head(x)

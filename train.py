@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC
+from model import ConvNet3D, ConvLSTM_FC, ViViT
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -20,12 +20,14 @@ def train(opt):
     test_size = opt.test_size
     patience = opt.patience
     learningmethod = opt.learnmethod
+
     # Create your transform
     transform = transforms.Compose([
         transforms.ToTensor(),
         # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) 
     ])
 
+    # data split
     file_list = glob.glob(os.path.join(opt.data, '**', '*.pt'), recursive=True)
     train_files, test_files = train_test_split(file_list, test_size=opt.test_size, random_state=42)
     train_files, val_files = train_test_split(train_files, test_size=opt.test_size, random_state=42)
@@ -42,6 +44,12 @@ def train(opt):
         val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
         test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
 
+    elif learningmethod=='vivit': 
+        # Create your datasets
+        train_dataset = VideoDataset(train_files, transform=transform)
+        val_dataset = VideoDataset(val_files, transform=transform)
+        test_dataset = VideoDataset(test_files, transform=transform)
+
     else:
         print('error: 入力が不適切です')
         return
@@ -53,16 +61,28 @@ def train(opt):
     if learningmethod=='conv3d':
         # Create the model
         model = ConvNet3D().to(device)
+        criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     elif learningmethod=='convlstm':
         model = ConvLSTM_FC(input_dim=5, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3).to(device)
+        criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
+
+    elif learningmethod=='vivit':
+        model = ViViT(depth=64, num_classes=2).to(device)
+        criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     else:
         print('error: 入力が不適切です')
         return
 
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        # Distribute models across multiple GPUs using nn.DataParallel
+        model = nn.DataParallel(model)
+
+    model.to(device)
+
     # Define a loss function and optimizer
-    criterion = nn.CrossEntropyLoss()  # Use MSE for regression
     optimizer = torch.optim.Adam(model.parameters())
 
     # Initialize variables for Early Stopping
@@ -112,10 +132,14 @@ def train(opt):
                 inputs, labels = inputs.to(device), labels.to(device)
                 if inputs.dtype != torch.float32:
                     inputs = inputs.float()
+                    
                 if learningmethod=='conv3d':
                     outputs = model(inputs)
                     
                 elif learningmethod=='convlstm':
+                    outputs= model(inputs)
+
+                elif learningmethod=='vivit':
                     outputs= model(inputs)
 
                 val_loss += criterion(outputs, labels).item()
@@ -127,7 +151,7 @@ def train(opt):
 
             # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-            torch.save(model.state_dict(), 'lstmnolimit_model.pt')
+            torch.save(model.state_dict(), 'lstmnolimit_model1.pt')
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
             
@@ -143,7 +167,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig('lstm_training_validation_nolimitloss.png')
+    plt.savefig('lstm_training_validation_nolimitloss1.png')
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
