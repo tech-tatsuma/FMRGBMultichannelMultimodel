@@ -38,7 +38,7 @@ class ConvNet3D(nn.Module):
         return x
 
 class ConvLSTMCell(nn.Module):
-    def __init__(self, input_dim, hidden_dim, kernel_size, bias):
+    def __init__(self, input_dim, hidden_dim, kernel_size, bias, dropout_rate=0.25):
         super(ConvLSTMCell, self).__init__()
         
         self.input_dim = input_dim # 入力データのチャンネル数
@@ -47,7 +47,7 @@ class ConvLSTMCell(nn.Module):
         self.kernel_size = kernel_size # 畳み込みのカーネルのサイズ
         self.padding = kernel_size[0] // 2, kernel_size[1] // 2 # 畳み込みのパディングサイズ
         self.bias = bias # バイアス項の有無
-
+        self.dropout = nn.Dropout(dropout_rate)
         self.conv = nn.Conv2d(in_channels=self.input_dim + self.hidden_dim,
                               out_channels=4 * self.hidden_dim,
                               kernel_size=self.kernel_size,
@@ -78,7 +78,7 @@ class ConvLSTMCell(nn.Module):
                 torch.zeros(batch_size, self.hidden_dim, height, width, device=self.conv.weight.device)) # 初期の隠れ状態とセル状態を生成
 
 class ConvLSTM(nn.Module):
-    def __init__(self, input_dim, hidden_dim, kernel_size, num_layers, batch_first=False, bias=True, return_all_layers=False):
+    def __init__(self, input_dim, hidden_dim, kernel_size, num_layers, batch_first=False, bias=True, dropout_rate=0.5, return_all_layers=False):
         super(ConvLSTM, self).__init__()
 
         self._check_kernel_size_consistency(kernel_size) # カーネルサイズの整合性を確認
@@ -103,7 +103,8 @@ class ConvLSTM(nn.Module):
             cell_list.append(ConvLSTMCell(input_dim=cur_input_dim,
                                           hidden_dim=self.hidden_dim[i],
                                           kernel_size=self.kernel_size[i],
-                                          bias=self.bias))# ConvLSTMCellをレイヤー数だけ追加していく
+                                          bias=self.bias,
+                                          dropout_rate=dropout_rate))# ConvLSTMCellをレイヤー数だけ追加していく
 
         self.cell_list = nn.ModuleList(cell_list)
 
@@ -168,9 +169,11 @@ class ConvLSTM_FC(ConvLSTM):
     def __init__(self, *args, **kwargs):
         super(ConvLSTM_FC, self).__init__(*args, **kwargs)
         self.gap = nn.AdaptiveAvgPool2d(1)
+        self.dropout = nn.Dropout(0.4)
         self.fc = nn.Sequential(
             nn.Linear(64, 128),  # 入力特徴量の次元を変更
             nn.ReLU(),
+            self.dropout,
             nn.Linear(128, 2)  # 出力を2次元に変更
         )
 
