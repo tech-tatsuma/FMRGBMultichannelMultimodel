@@ -13,15 +13,23 @@ class ConvNet3D(nn.Module):
         self.conv = nn.Sequential(
             nn.Conv3d(5, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1)),
             nn.ReLU(),
+            nn.BatchNorm3d(16),
             nn.MaxPool3d((2, 2, 2)),
-            # Continue with more layers as needed...
+            nn.Conv3d(16, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1)),
+            nn.ReLU(),
+            nn.BatchNorm3d(32),
+            nn.MaxPool3d((2, 2, 2)),
+            nn.Conv3d(32, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1)),
+            nn.ReLU(),
+            nn.BatchNorm3d(64),
+            nn.MaxPool3d((2, 2, 2)),
         )
         self.fc = None
 
     def forward_features(self, x):
         x = self.conv(x)
         return x.view(x.size(0), -1)
-        
+
     def forward(self, x):
         if self.fc is None:
             # Get output shape of conv layers
@@ -29,9 +37,15 @@ class ConvNet3D(nn.Module):
             out_shape = out.shape[-1]
             # Define fc layer with the obtained output shape
             self.fc = nn.Sequential(
-                nn.Linear(out_shape, 128),
+                nn.Linear(out_shape, 256),
                 nn.ReLU(),
-                nn.Linear(128, 2)  # Single output for regression
+                nn.BatchNorm1d(256),
+                nn.Dropout(0.5),
+                nn.Linear(256, 128),
+                nn.ReLU(),
+                nn.BatchNorm1d(128),
+                nn.Dropout(0.5),
+                nn.Linear(128, 2)  # Single output for binary classification
             ).to(x.device)
         x = self.forward_features(x)
         x = self.fc(x)
@@ -47,7 +61,6 @@ class ConvLSTMCell(nn.Module):
         self.kernel_size = kernel_size # 畳み込みのカーネルのサイズ
         self.padding = kernel_size[0] // 2, kernel_size[1] // 2 # 畳み込みのパディングサイズ
         self.bias = bias # バイアス項の有無
-        self.dropout = nn.Dropout(dropout_rate)
         self.conv = nn.Conv2d(in_channels=self.input_dim + self.hidden_dim,
                               out_channels=4 * self.hidden_dim,
                               kernel_size=self.kernel_size,

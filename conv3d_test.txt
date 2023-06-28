@@ -1,0 +1,4 @@
+Namespace(data='violence_datasets', epochs=100, lr=0.001, test_size=0.2, patience=20, learnmethod='conv3d')
+-----biginning training-----
+Let's use 4 GPUs!
+0it [00:00, ?it/s]1it [03:41, 221.85s/it]2it [07:17, 217.99s/it]3it [10:52, 216.92s/it]4it [14:30, 217.11s/it]5it [18:02, 215.42s/it]6it [21:49, 219.21s/it]7it [25:22, 217.36s/it]8it [29:08, 220.04s/it]9it [32:40, 217.45s/it]10it [36:23, 219.28s/it]11it [39:50, 215.56s/it]

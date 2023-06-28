@@ -13,31 +13,40 @@ import glob
 from torch import nn
 import numpy as np
 from torchviz import make_dot
+import sys
 
+def calculate_dataset_statistics(file_list):
+    # Initialize sum and square sum
+    sum_ = torch.zeros_like(torch.load(file_list[0]), dtype=torch.float64)
+    sum_of_squares = torch.zeros_like(torch.load(file_list[0]), dtype=torch.float64)
+    total_frames = 0
 
-def calculate_dataset_statistics(train_files):
-    count = 0
-    channel_num = max(torch.load(file).shape[1] for file in train_files)
-    # The first file is used to get the channel number
-    first_tensor = torch.load(train_files[0])
+    # Calculate the sum and sum of squares for each pixel value
+    for file in file_list:
+        video_tensor = torch.load(file).permute(3, 0, 1, 2)  # Change to [C, D, H, W]
+        sum_ += torch.sum(video_tensor, dim=(1, 2, 3))  # sum per channel
+        sum_of_squares += torch.sum(video_tensor ** 2, dim=(1, 2, 3))  # sum of squares per channel
+        total_frames += video_tensor.shape[1]
 
-    mean = np.zeros(channel_num)
-    M2 = np.zeros(channel_num)
+    mean = sum_ / total_frames  # calculate mean per channel
+    std = torch.sqrt(sum_of_squares / total_frames - mean**2)  # calculate std per channel
 
-    for file in train_files:
-        print(file)
-        tensor = torch.load(file)
-        for channel in range(tensor.shape[1]):  # Assuming the channel is at the 1st dimension
-            pixel_values = tensor[:, channel, :, :].flatten().cpu().numpy()
-            for pixel in pixel_values:
-                count += 1
-                delta = pixel - mean[channel]
-                mean[channel] += delta / count
-                delta2 = pixel - mean[channel]
-                M2[channel] += delta * delta2
-    std = np.sqrt(M2 / (count - 1))
+    return mean.tolist(), std.tolist()
 
-    return mean, std
+class Normalize3D(object):
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, tensor):
+        # Determine if the input tensor is 4D or 5D
+        if tensor.dim() == 5:  # Case of [batch_size, num_channels, depth, height, width]
+            for t, m, s in zip(tensor.permute(1, 0, 2, 3, 4), self.mean, self.std):
+                t.sub_(m).div_(s)
+        elif tensor.dim() == 4:  # Case of [batch_size, depth, num_channels, height, width]
+            for t, m, s in zip(tensor.permute(2, 0, 1, 3, 4), self.mean, self.std):
+                t.sub_(m).div_(s)
+        return tensor
 
 def train(opt):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -52,12 +61,10 @@ def train(opt):
 
     file_list = glob.glob(os.path.join(opt.data, '**', '*.pt'), recursive=True)
     mean, std = calculate_dataset_statistics(file_list)
-    print('mean',mean)
-    print('std',std)
     # Create your transform
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean, std=std) 
+        Normalize3D(mean, std),
     ])
 
     # data split
@@ -100,7 +107,7 @@ def train(opt):
 
     elif learningmethod=='vivit':
         # create vivit model
-        model = ViViT(image_size=224, patch_size=16, num_classes=10, num_frames=64, in_channels=5).to(device)
+        model = ViViT(image_size=224, patch_size=16, num_classes=2, num_frames=64, in_channels=5).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     else:
@@ -213,6 +220,9 @@ if __name__=='__main__':
     parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm or vivit')
     opt = parser.parse_args()
     print(opt)
+    sys.stdout.flush()
     print('-----biginning training-----')
+    sys.stdout.flush()
     train(opt)
     print('-----completing training-----')
+    sys.stdout.flush()
