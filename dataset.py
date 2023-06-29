@@ -62,15 +62,9 @@ class VideoDataset(Dataset):
                 img = img.resize(self.target_size, Image.BICUBIC) # resize all channels
                 if c < 3 and self.transform:  # RGB channels
                     img = self.transform(img)
-                    print(img)
-                    print(img.dtype)
                 if isinstance(img, Image.Image):  # If the transform did not convert to tensor
                     img = F.to_tensor(img).float()
                 elif isinstance(img, np.ndarray):  # If the transform output is a numpy array
                     img = torch.from_numpy(img)
                 tensor_transformed[t, :, :, c] = img  # the size of img must be (self.target_size[1], self.target_size[0]) now
         return tensor_transformed
-
-
-        return tensor_transformed
-

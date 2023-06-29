@@ -12,8 +12,9 @@ import os
 import glob
 from torch import nn
 import numpy as np
-from torchviz import make_dot
+from torchinfo import summary
 import sys
+from sklearn.metrics import accuracy_score
 
 def calculate_dataset_statistics(file_list):
     # Initialize sum and square sum
@@ -121,6 +122,12 @@ def train(opt):
 
 
     model.to(device)
+
+    with open('model_summary.txt', 'w') as f:
+        sys.stdout = f
+        summary(model, input_size=(20, 3, 224, 224))
+        sys.stdout = sys.__stdout__
+
     # Define a loss function and optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     # Initialize variables for Early Stopping
@@ -129,12 +136,16 @@ def train(opt):
 
     # Initialize lists to monitor train and validation losses
     train_losses = []
+    train_accuracies = []
     val_losses = []
+    val_accuracies = []
 
     # Train the model
     for epoch in range(epochs):  # Number of epochs
         train_loss = 0
+        train_corrects = 0
         val_loss = 0
+        val_corrects = 0
         model.train()
 
         for i, (inputs, labels) in tqdm(enumerate(train_loader, 0)):
@@ -158,17 +169,16 @@ def train(opt):
                 outputs = model(inputs)
 
             loss = criterion(outputs, labels)
-            if i == 0:  # only for the first iteration
-                dot = make_dot(loss, params=dict(model.named_parameters()))
-                dot.format = 'png'
-                dot.render(filename=f'model_{learningmethod}_structure')
+            _, preds = torch.max(outputs, 1)
+            train_corrects += torch.sum(preds == labels.data)
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
 
         train_loss /= len(train_loader)
         train_losses.append(train_loss)
-
+        train_accuracy = train_corrects.double() / len(train_dataset)
+        train_accuracies.append(train_accuracy)
         model.eval()
         val_loss = 0
 
@@ -181,11 +191,16 @@ def train(opt):
                 outputs= model(inputs)
 
                 val_loss += criterion(outputs, labels).item()
+                _, preds = torch.max(outputs, 1)
+                val_corrects += torch.sum(preds == labels.data)
 
         val_loss /= len(val_loader)
         val_losses.append(val_loss)
+        val_accuracy = val_corrects.double() / len(val_dataset)
+        val_accuracies.append(val_accuracy)
 
-        print(f'Epoch {epoch+1}, Validation loss: {val_loss:.4f}')
+        print(f'Epoch {epoch+1}, Validation loss: {val_loss:.4f}, Validation accuracy: {val_accuracy:.4f}')
+        sys.stdout.flush()
 
             # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
@@ -201,10 +216,18 @@ def train(opt):
 
     # Plotting the training progress
     plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
     plt.plot(train_losses, label='Training loss')
     plt.plot(val_losses, label='Validation loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(train_losses, label='Train Accuracy')
+    plt.plot(val_losses, label='Val Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
     plt.legend()
     plot_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.png'
     plt.savefig(plot_save_name)
