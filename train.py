@@ -16,6 +16,7 @@ from torchinfo import summary
 import sys
 from sklearn.metrics import accuracy_score
 
+# Calculate the mean and standard deviation of the data set
 def calculate_dataset_statistics(file_list):
     # Initialize sum and square sum
     sum_ = torch.zeros_like(torch.load(file_list[0]), dtype=torch.float64)
@@ -125,7 +126,7 @@ def train(opt):
 
     with open('model_summary.txt', 'w') as f:
         sys.stdout = f
-        summary(model, input_size=(20, 3, 224, 224))
+        summary(model, input_size=(20, 64, 5, 224, 224))
         sys.stdout = sys.__stdout__
 
     # Define a loss function and optimizer
@@ -163,7 +164,6 @@ def train(opt):
 
             elif learningmethod=='convlstm':
                 outputs = model(inputs)
-                print('outputs:', outputs.shape)
 
             elif learningmethod=='vivit':
                 outputs = model(inputs)
@@ -178,7 +178,7 @@ def train(opt):
         train_loss /= len(train_loader)
         train_losses.append(train_loss)
         train_accuracy = train_corrects.double() / len(train_dataset)
-        train_accuracies.append(train_accuracy)
+        train_accuracies.append(train_accuracy.item())
         model.eval()
         val_loss = 0
 
@@ -197,7 +197,7 @@ def train(opt):
         val_loss /= len(val_loader)
         val_losses.append(val_loss)
         val_accuracy = val_corrects.double() / len(val_dataset)
-        val_accuracies.append(val_accuracy)
+        val_accuracies.append(val_accuracy.item())
 
         print(f'Epoch {epoch+1}, Validation loss: {val_loss:.4f}, Validation accuracy: {val_accuracy:.4f}')
         sys.stdout.flush()
@@ -224,8 +224,8 @@ def train(opt):
     plt.legend()
 
     plt.subplot(1, 2, 2)
-    plt.plot(train_losses, label='Train Accuracy')
-    plt.plot(val_losses, label='Val Accuracy')
+    plt.plot(train_accuracies, label='Train Accuracy')
+    plt.plot(val_accuracies, label='Val Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()

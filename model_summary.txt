@@ -1,0 +1,53 @@
+=========================================================================================================
+Layer (type:depth-idx)                                  Output Shape              Param #
+=========================================================================================================
+DataParallel                                            [20, 2]                   --
+├─ViViT: 1-1                                            [10, 2]                   6,222,914
+├─ViViT: 1-4                                            --                        (recursive)
+│    └─Sequential: 2-1                                  [10, 64, 196, 192]        245,952
+│    └─Sequential: 2-4                                  --                        (recursive)
+│    │    └─Rearrange: 3-1                              [10, 64, 196, 1280]       --
+│    │    └─Linear: 3-2                                 [10, 64, 196, 192]        245,952
+├─ViViT: 1-3                                            [10, 2]                   --
+├─ViViT: 1-4                                            --                        (recursive)
+│    └─Sequential: 2-3                                  [10, 64, 196, 192]        --
+│    └─Sequential: 2-4                                  --                        (recursive)
+│    │    └─Rearrange: 3-3                              [10, 64, 196, 1280]       --
+│    │    └─Linear: 3-4                                 [10, 64, 196, 192]        --
+│    └─Dropout: 2-5                                     [10, 64, 197, 192]        --
+│    └─Transformer: 2-6                                 [640, 197, 192]           1,777,536
+│    └─Transformer: 2-14                                --                        (recursive)
+│    │    └─ModuleList: 3-11                            --                        (recursive)
+│    │    └─LayerNorm: 3-6                              [640, 197, 192]           384
+│    └─Transformer: 2-8                                 [10, 65, 192]             1,777,536
+│    └─Transformer: 2-16                                --                        (recursive)
+│    │    └─ModuleList: 3-13                            --                        (recursive)
+│    │    └─LayerNorm: 3-8                              [10, 65, 192]             384
+│    └─Sequential: 2-10                                 [10, 2]                   770
+│    └─Sequential: 2-18                                 --                        (recursive)
+│    │    └─LayerNorm: 3-9                              [10, 192]                 384
+│    │    └─Linear: 3-10                                [10, 2]                   386
+│    └─Dropout: 2-12                                    [10, 64, 197, 192]        --
+│    └─Transformer: 2-13                                [640, 197, 192]           --
+│    └─Transformer: 2-14                                --                        (recursive)
+│    │    └─ModuleList: 3-11                            --                        (recursive)
+│    │    └─LayerNorm: 3-12                             [640, 197, 192]           --
+│    └─Transformer: 2-15                                [10, 65, 192]             --
+│    └─Transformer: 2-16                                --                        (recursive)
+│    │    └─ModuleList: 3-13                            --                        (recursive)
+│    │    └─LayerNorm: 3-14                             [10, 65, 192]             --
+│    └─Sequential: 2-17                                 [10, 2]                   --
+│    └─Sequential: 2-18                                 --                        (recursive)
+│    │    └─LayerNorm: 3-15                             [10, 192]                 --
+│    │    └─Linear: 3-16                                [10, 2]                   --
+=========================================================================================================
+Total params: 23,592,390
+Trainable params: 23,592,390
+Non-trainable params: 0
+Total mult-adds (G): 1.16
+=========================================================================================================
+Input size (MB): 1284.51
+Forward/backward pass size (MB): 8952.27
+Params size (MB): 15.21
+Estimated Total Size (MB): 10251.98
+=========================================================================================================
