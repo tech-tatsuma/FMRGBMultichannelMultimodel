@@ -23,13 +23,16 @@ class VideoDataset(Dataset):
         return len(self.file_list)
 
     def __getitem__(self, idx):
-        # ファイルの読み込み
+        # loading file
         file_path = self.file_list[idx]
         tensor = torch.load(file_path)
-        # ファイルに付与されたラベルの取得
+
+        # get the label info
         label_name = os.path.basename(os.path.dirname(file_path))
-        #ラベルを0 or 1にマッピング
+
+        # mapping the label
         label = self.label_mapping[label_name]
+        # get the total frame num
         total_frames = tensor.shape[0]
 
         if total_frames > self.target_frames:
@@ -41,17 +44,22 @@ class VideoDataset(Dataset):
             size_diff = self.target_frames - total_frames
             padding = torch.zeros((size_diff, tensor.shape[1], tensor.shape[2], tensor.shape[3]))
             tensor = torch.cat([tensor, padding], dim=0)
-            
+        
+        # apply the transform
         if self.transform:
+            print('shape of tensor before transform:',tensor.shape)
             tensor = self.apply_transform(tensor)
+
+        # change the tensor dimention order
         if self.isconvon == True:
             tensor = tensor.permute(3, 0, 1, 2)
         if self.isconvon == False:
             tensor = tensor.permute(0, 3, 1, 2)
-        print(tensor.shape)
+        
         return tensor, label
 
 
+    # define the transform function
     def apply_transform(self, tensor):
         T, H, W, C = tensor.shape
         tensor_transformed = torch.zeros(T, self.target_size[1], self.target_size[0], C)
@@ -67,4 +75,5 @@ class VideoDataset(Dataset):
                 elif isinstance(img, np.ndarray):  # If the transform output is a numpy array
                     img = torch.from_numpy(img)
                 tensor_transformed[t, :, :, c] = img  # the size of img must be (self.target_size[1], self.target_size[0]) now
+                
         return tensor_transformed

@@ -55,7 +55,7 @@ class ConvLSTMCell(nn.Module):
     def __init__(self, input_dim, hidden_dim, kernel_size, bias, dropout_rate=0.25):
         super(ConvLSTMCell, self).__init__()
         
-        self.input_dim = input_dim # 入力データのチャンネル数
+        self.input_dim = input_dim # num of input channels
         self.hidden_dim = hidden_dim # 隠れ状態のチャンネル数
 
         self.kernel_size = kernel_size # 畳み込みのカーネルのサイズ
@@ -182,12 +182,20 @@ class ConvLSTM_FC(ConvLSTM):
     def __init__(self, *args, **kwargs):
         super(ConvLSTM_FC, self).__init__(*args, **kwargs)
         self.gap = nn.AdaptiveAvgPool2d(1)
-        self.dropout = nn.Dropout(0.4)
+        self.dropout1 = nn.Dropout(0.4)
+        self.dropout2 = nn.Dropout(0.25)
+        self.dropout3 = nn.Dropout(0.5)
         self.fc = nn.Sequential(
-            nn.Linear(64, 128),  # 入力特徴量の次元を変更
+            nn.Linear(64, 256),  # 入力特徴量の次元を変更
             nn.ReLU(),
-            self.dropout,
-            nn.Linear(128, 2)  # 出力を2次元に変更
+            self.dropout1,
+            nn.Linear(256, 128),  # 追加の中間層
+            nn.ReLU(),
+            self.dropout3,
+            nn.Linear(128, 64),  # 追加の中間層
+            nn.ReLU(),
+            self.dropout2,
+            nn.Linear(64, 2)  # 出力を2次元に変更
         )
 
     def forward(self, input_tensor, hidden_state=None):

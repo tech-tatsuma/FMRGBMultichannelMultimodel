@@ -14,9 +14,8 @@ from torch import nn
 import numpy as np
 from torchinfo import summary
 import sys
-from sklearn.metrics import accuracy_score
 
-# Calculate the mean and standard deviation of the data set
+# Calculate the mean and standard deviation of the dataset
 def calculate_dataset_statistics(file_list):
     # Initialize sum and square sum
     sum_ = torch.zeros_like(torch.load(file_list[0]), dtype=torch.float64)
@@ -49,11 +48,12 @@ class Normalize3D(object):
             for t, m, s in zip(tensor.permute(2, 0, 1, 3, 4), self.mean, self.std):
                 t.sub_(m).div_(s)
         return tensor
-
+# main train function
 def train(opt):
+    # setting the device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    # get the option info
+    # get the optional info
     data_file = opt.data
     epochs = opt.epochs
     test_size = opt.test_size
@@ -61,39 +61,42 @@ def train(opt):
     learningmethod = opt.learnmethod
     learning_rate = opt.lr
 
+    # get the all file list
     file_list = glob.glob(os.path.join(opt.data, '**', '*.pt'), recursive=True)
+    # calculate mean and std value
     mean, std = calculate_dataset_statistics(file_list)
-    # Create your transform
+    # define transform
     transform = transforms.Compose([
         transforms.ToTensor(),
         Normalize3D(mean, std),
     ])
 
     # data split
-    train_files, test_files = train_test_split(file_list, test_size=test_size, random_state=42)
-    train_files, val_files = train_test_split(train_files, test_size=test_size, random_state=42)
+    # train_files, test_files = train_test_split(file_list, test_size=test_size, random_state=42)
+    # train_files, val_files = train_test_split(train_files, test_size=test_size, random_state=42)
+    train_files, val_files = train_test_split(file_list, test_size=test_size, random_state=42)
 
     # create datasets
     if learningmethod=='conv3d':
         train_dataset = VideoDataset(train_files, transform=transform)
         val_dataset = VideoDataset(val_files, transform=transform)
-        test_dataset = VideoDataset(test_files, transform=transform)
+        # test_dataset = VideoDataset(test_files, transform=transform)
 
     elif learningmethod=='convlstm':
         train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
         val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
-        test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
+        # test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
 
     elif learningmethod=='vivit': 
         train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
         val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
-        test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
+        # test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
 
     else:
         print('error: 入力が不適切です')
         return
 
-    # Create your dataloaders
+    # Create dataloaders
     train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
 
@@ -116,20 +119,23 @@ def train(opt):
         print('error: 入力が不適切です')
         return
 
+    # code to use multi GPU
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         # Distribute models across multiple GPUs using nn.DataParallel
         model = nn.DataParallel(model)
 
-
+    # transfer model to device
     model.to(device)
 
+    # output summary of used model
     with open('model_summary.txt', 'w') as f:
         sys.stdout = f
+        # setting the each input size
         summary(model, input_size=(20, 64, 5, 224, 224))
         sys.stdout = sys.__stdout__
 
-    # Define a loss function and optimizer
+    # Define a optimizer and learning rate
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     # Initialize variables for Early Stopping
     val_loss_min = None
@@ -147,37 +153,36 @@ def train(opt):
         train_corrects = 0
         val_loss = 0
         val_corrects = 0
+        # change the model mode to train mode
         model.train()
-
+        # train loading
         for i, (inputs, labels) in tqdm(enumerate(train_loader, 0)):
-
+            # transfer inputs and labels to device
             inputs, labels = inputs.to(device), labels.to(device)
             # Zero the parameter gradients
             optimizer.zero_grad()
-
-            # Forward + backward + optimize
+            # inputs data have to be float
             if inputs.dtype != torch.float32:
                 inputs = inputs.float()
 
-            if learningmethod=='conv3d':
-                outputs = model(inputs)
+            # apply model to train
+            outputs = model(inputs)
 
-            elif learningmethod=='convlstm':
-                outputs = model(inputs)
-
-            elif learningmethod=='vivit':
-                outputs = model(inputs)
-
+            # Forward + backward + optimize
             loss = criterion(outputs, labels)
             _, preds = torch.max(outputs, 1)
-            train_corrects += torch.sum(preds == labels.data)
+            train_corrects += torch.sum(preds == labels)
+            print('preds_train:',preds)
+            sys.stdout.flush()
+            print('labels_train:',labels)
+            sys.stdout.flush()
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
 
         train_loss /= len(train_loader)
         train_losses.append(train_loss)
-        train_accuracy = train_corrects.double() / len(train_dataset)
+        train_accuracy = train_corrects.double() / len(train_loader.dataset)
         train_accuracies.append(train_accuracy.item())
         model.eval()
         val_loss = 0
@@ -188,21 +193,25 @@ def train(opt):
                 if inputs.dtype != torch.float32:
                     inputs = inputs.float()
                     
-                outputs= model(inputs)
+                outputs = model(inputs)
 
                 val_loss += criterion(outputs, labels).item()
                 _, preds = torch.max(outputs, 1)
-                val_corrects += torch.sum(preds == labels.data)
+                val_corrects += torch.sum(preds == labels)
+                print('preds_val:',preds)
+                sys.stdout.flush()
+                print('labels_val:',labels)
+                sys.stdout.flush()
 
         val_loss /= len(val_loader)
         val_losses.append(val_loss)
-        val_accuracy = val_corrects.double() / len(val_dataset)
+        val_accuracy = val_corrects.double() / len(val_loader.dataset)
         val_accuracies.append(val_accuracy.item())
 
         print(f'Epoch {epoch+1}, Validation loss: {val_loss:.4f}, Validation accuracy: {val_accuracy:.4f}')
         sys.stdout.flush()
 
-            # Save the model if validation loss decreases
+        # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
             model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.pt'
             torch.save(model.state_dict(), model_save_name)
@@ -214,7 +223,7 @@ def train(opt):
             print('Early stopping due to validation loss not improving for {} epochs'.format(patience))
             break
 
-    # Plotting the training progress
+    # Plotting the training and validation progress
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
     plt.plot(train_losses, label='Training loss')
@@ -242,6 +251,7 @@ if __name__=='__main__':
     parser.add_argument('--patience', type=int, required=True, default=5, help='patience')
     parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm or vivit')
     opt = parser.parse_args()
+    # confirm the option
     print(opt)
     sys.stdout.flush()
     print('-----biginning training-----')
