@@ -97,8 +97,8 @@ def train(opt):
         return
 
     # Create dataloaders
-    train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
 
     if learningmethod=='conv3d':
         # create 3dcnn model
@@ -132,7 +132,8 @@ def train(opt):
     with open('model_summary.txt', 'w') as f:
         sys.stdout = f
         # setting the each input size
-        summary(model, input_size=(20, 64, 5, 224, 224))
+        summary(model, input_size=(4, 64, 5, 224, 224)) # convlstm & vivit
+        # summary(model, input_size=(20, 5, 64, 224, 224)) # conv3d
         sys.stdout = sys.__stdout__
 
     # Define a optimizer and learning rate
