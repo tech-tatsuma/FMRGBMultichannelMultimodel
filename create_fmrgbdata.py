@@ -14,6 +14,7 @@ from PIL import Image
 import io
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from scipy.signal import resample
 
 
 # 指定されたディレクトリ内の全動画のフレーム数を調べ、最もフレーム数の多い動画のフレーム数を返す関数
@@ -32,7 +33,7 @@ def stereo_to_mono(audio_samples):
     return audio_samples[::2] / 2 + audio_samples[1::2] / 2
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
-def process_video_withmel(video_path, max_frames, parameter,skip):
+def process_video_withmel(video_path, max_frames, parameter, isfmrgb):
     # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -49,28 +50,23 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
         print(f"Could not extract audio from {video_path}. Skipping this video.")
         return
     frequency_param = parameter
+
     # 周波数を計算するための音声配列を作る作業    
     # 一秒間にfps*frequency_param個の音声データをサンプリングする
-    audio = audio.set_frame_rate(round(fps*frequency_param))
-    audio_sample_frequency_rate = audio.frame_rate
     audio_samples_frequency = np.array(audio.get_array_of_samples())
+    # Resample audio to match desired frequency samples
+    audio_samples_frequency = resample(audio_samples_frequency, int(total_frames * frequency_param)).astype(np.float32)
 
-    # 振幅情報を取るための音声配列を作る作業
-    desired_sample_rate = round(fps)
-    audio = audio.set_frame_rate(desired_sample_rate)
-    audio_sample_rate = audio.frame_rate
+    # 音声データを必要な長さに調整する
     audio_samples = np.array(audio.get_array_of_samples())
-
-    # 音声データがstereoだった場合、monoに変換する
-    if audio.channels == 2:
-        audio_samples = stereo_to_mono(audio_samples)
-        audio_samples_frequency = stereo_to_mono(audio_samples_frequency)
-    audio_samples_frequency = audio_samples_frequency.astype(np.float32)
+    # resample audio to match video frame count
+    audio_samples = resample(audio_samples, int(total_frames))
 
     if np.issubdtype(audio_samples.dtype, np.integer):
         audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
     elif np.issubdtype(audio_samples.dtype, np.floating):
         audio_samples = audio_samples / np.finfo(audio_samples.dtype).max
+
     process_bar = tqdm(total=total_frames)
     # 周波数情報を離散フーリエ変換で取得する
     results = []
@@ -94,7 +90,12 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
         results.append(img_array)
         plt.close()
         process_bar.update(1)
-
+    print('result length: ',len(results))
+    print('frequency length: ',len(audio_samples_frequency))
+    print('audio length',len(audio_samples))
+    print('resampled audio length', len(audio_samples))
+    print('resampled audio frequency length', len(audio_samples_frequency))
+    print('total frames',total_frames)
     # 音声データの最大振幅を取得
     max_amplitude = np.max(np.abs(audio_samples))
     if max_amplitude == 0:
@@ -108,9 +109,15 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
 
         if not ret:
             break
-        if frame_count%skip==0:
+        if frame_count < len(audio_samples):
             # RGBに変換する
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if isfmrgb=='true':
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            elif isfmrgb=='false':
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            else:
+                print('入力が適切ではありません')
+                return
             # 振幅データを取得
             amplitude = np.abs(audio_samples[frame_count])
             # 振幅を0-255の範囲にリサイズ
@@ -123,6 +130,9 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
             frame = np.dstack((frame, amp_channel, spectrogram_channel))
             # frames配列に追加
             frames.append(frame)
+        else:
+            print(f'Frame count {frame_count} exceeds audio sample length. Stopping processing.')
+            break
         frame_count += 1
         pbar.update(1)
     # frames配列を構成する
@@ -133,7 +143,7 @@ def process_video_withmel(video_path, max_frames, parameter,skip):
     torch.save(torch.from_numpy(frames), video_path + '.pt')
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
-def process_video(video_path, max_frames, parameter, skip):
+def process_video(video_path, max_frames, parameter, isfmrgb):
     # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
     # ビデオのfpsを取得する
@@ -148,23 +158,17 @@ def process_video(video_path, max_frames, parameter, skip):
         print(f"Could not extract audio from {video_path}. Skipping this video.")
         return
     frequency_param = parameter
+
     # 周波数を計算するための音声配列を作る作業    
     # 一秒間にfps*frequency_param個の音声データをサンプリングする
-    audio = audio.set_frame_rate(round(fps*frequency_param))
-    audio_sample_frequency_rate = audio.frame_rate
     audio_samples_frequency = np.array(audio.get_array_of_samples())
+    # Resample audio to match desired frequency samples
+    audio_samples_frequency = resample(audio_samples_frequency, int(total_frames * frequency_param)).astype(np.float32)
 
-    # 振幅情報を取るための音声配列を作る作業
-    desired_sample_rate = round(fps)
-    audio = audio.set_frame_rate(desired_sample_rate)
-    audio_sample_rate = audio.frame_rate
+    # 音声データを必要な長さに調整する
     audio_samples = np.array(audio.get_array_of_samples())
-
-    # 音声データがstereoだった場合、monoに変換する
-    if audio.channels == 2:
-        audio_samples = stereo_to_mono(audio_samples)
-        audio_samples_frequency = stereo_to_mono(audio_samples_frequency)
-    audio_samples_frequency = audio_samples_frequency.astype(np.float32)
+    # resample audio to match video frame count
+    audio_samples = resample(audio_samples, int(total_frames))
 
     if np.issubdtype(audio_samples.dtype, np.integer):
         audio_samples = audio_samples / np.iinfo(audio_samples.dtype).max
@@ -198,9 +202,15 @@ def process_video(video_path, max_frames, parameter, skip):
 
         if not ret:
             break
-        if frame_count%skip==0:
+        if frame_count < len(audio_samples):
             # RGBに変換する
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if isfmrgb=='true':
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            elif isfmrgb=='false':
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            else:
+                print('入力が適切ではありません')
+                return
             # 振幅データを取得
             amplitude = np.abs(audio_samples[frame_count])
             # 振幅を0-255の範囲にリサイズ
@@ -213,6 +223,9 @@ def process_video(video_path, max_frames, parameter, skip):
             frame = np.dstack((frame, amp_channel, spectrogram_channel))
             # frames配列に追加
             frames.append(frame)
+        else:
+            print(f'Frame count {frame_count} exceeds audio sample length. Stopping processing.')
+            break
         frame_count += 1
         pbar.update(1)
 
@@ -228,14 +241,14 @@ def process_directory(opt):
     audio_process_method = opt.audiomethod
     directory_path = opt.target
     parameter = opt.frequency_param
-    skip = opt.skip
+    isfmrgb = opt.fmrgb
     max_frames = get_max_frames(directory_path)
     for filename in os.listdir(directory_path):
         if filename.endswith('.mp4'):
             if audio_process_method=='simple':
-                process_video(os.path.join(directory_path, filename), max_frames, parameter, skip)
+                process_video(os.path.join(directory_path, filename), max_frames, parameter, isfmrgb)
             elif audio_process_method=='mel':
-                process_video_withmel(os.path.join(directory_path, filename), max_frames, parameter, skip)
+                process_video_withmel(os.path.join(directory_path, filename), max_frames, parameter, isfmrgb)
             else:
                 print('音声を処理するメソッドの指定が適切ではありません')
 
@@ -246,7 +259,7 @@ if __name__=='__main__':
     parser.add_argument('--target',type=str, required=True, help='folder')
     parser.add_argument('--audiomethod',type=str, default='simple', help='audio method')
     parser.add_argument('--frequency_param', type=int, default=100, help='frequency parameter')
-    parser.add_argument('--skip', type=int, default=1, help='skip parameter')
+    parser.add_argument('--fmrgb', type=str, default='true', help='fmrgb or not true false')
     opt = parser.parse_args()
     print(opt)
     print('-----biginning processing-----')

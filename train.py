@@ -102,7 +102,7 @@ def train(opt):
 
     if learningmethod=='conv3d':
         # create 3dcnn model
-        model = ConvNet3D().to(device)
+        model = ConvNet3D(batch_size=20, image_size=112).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     elif learningmethod=='convlstm':
@@ -112,7 +112,7 @@ def train(opt):
 
     elif learningmethod=='vivit':
         # create vivit model
-        model = ViViT(image_size=224, patch_size=16, num_classes=2, num_frames=64, in_channels=5).to(device)
+        model = ViViT(image_size=112, patch_size=16, num_classes=2, num_frames=64, in_channels=5).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     else:

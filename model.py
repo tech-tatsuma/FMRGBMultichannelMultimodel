@@ -6,29 +6,46 @@ from einops.layers.torch import Rearrange
 from previvitmodel import Attention, PreNorm, FeedForward ,LeFF,  LCAttention
 
 
-# 3D Convolutional Neural Network
 class ConvNet3D(nn.Module):
-    def __init__(self):
-        super(SimpleConvNet3D, self).__init__()
+    def __init__(self, in_channels=5, num_classes=2, batch_size=20, image_size=112):
+        super(ConvNet3D, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv3d(5, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv3d(in_channels, 16, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool3d(2),
             nn.Conv3d(16, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool3d(2),
         )
+
+        # Here we are going to compute the size of Linear layer input
+        self._to_linear = None
+        x = torch.randn(batch_size, in_channels, 64, image_size, image_size)  # Replace with your input shape
+        self.convs(x)
+
         self.fc = nn.Sequential(
-            nn.Linear(32*8*8*8, 128), # 8*8*8は入力データの形状に依存します
+            nn.Linear(self._to_linear, 256),  
             nn.ReLU(),
-            nn.Linear(128, 2)  # Change the output size depending on your needs
+            nn.Dropout(0.5),
+            nn.Linear(256, 128),  
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(128, num_classes) 
         )
 
-    def forward(self, x):
+
+    def convs(self, x):
         x = self.conv(x)
-        x = x.view(x.size(0), -1)  # Flatten the tensor
+        if self._to_linear is None:
+            self._to_linear = x[0].shape[0]*x[0].shape[1]*x[0].shape[2]*x[0].shape[3]
+        return x
+
+    def forward(self, x):
+        x = self.convs(x)
+        x = x.view(-1, self._to_linear)
         x = self.fc(x)
         return x
+
 
 class ConvLSTMCell(nn.Module):
     def __init__(self, input_dim, hidden_dim, kernel_size, bias):
