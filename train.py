@@ -97,8 +97,8 @@ def train(opt):
         return
 
     # Create dataloaders
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
 
     if learningmethod=='conv3d':
         # create 3dcnn model
@@ -129,10 +129,10 @@ def train(opt):
     model.to(device)
 
     # output summary of used model
-    with open('model_summary.txt', 'w') as f:
+    with open('model_summary_vivit.txt', 'w') as f:
         sys.stdout = f
         # setting the each input size
-        summary(model, input_size=(4, 64, 5, 224, 224)) # convlstm & vivit
+        summary(model, input_size=(20, 64, 5, 224, 224)) # convlstm & vivit
         # summary(model, input_size=(20, 5, 64, 224, 224)) # conv3d
         sys.stdout = sys.__stdout__
 
@@ -172,14 +172,14 @@ def train(opt):
             # Forward + backward + optimize
             loss = criterion(outputs, labels)
             _, preds = torch.max(outputs, 1)
-            train_corrects += torch.sum(preds == labels)
+            train_corrects += torch.sum(preds == labels).cpu().detach()
             print('preds_train:',preds)
             sys.stdout.flush()
             print('labels_train:',labels)
             sys.stdout.flush()
             loss.backward()
             optimizer.step()
-            train_loss += loss.item()
+            train_loss += loss.item().cpu().detach()
 
         train_loss /= len(train_loader)
         train_losses.append(train_loss)
@@ -196,9 +196,9 @@ def train(opt):
                     
                 outputs = model(inputs)
 
-                val_loss += criterion(outputs, labels).item()
+                val_loss += criterion(outputs, labels).item().cpu().detach()
                 _, preds = torch.max(outputs, 1)
-                val_corrects += torch.sum(preds == labels)
+                val_corrects += torch.sum(preds == labels).cpu().detach()
                 print('preds_val:',preds)
                 sys.stdout.flush()
                 print('labels_val:',labels)
@@ -211,6 +211,10 @@ def train(opt):
 
         print(f'Epoch {epoch+1}, Validation loss: {val_loss:.4f}, Validation accuracy: {val_accuracy:.4f}')
         sys.stdout.flush()
+
+        # Memory Clear Here
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
         # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
