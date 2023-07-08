@@ -14,6 +14,7 @@ from torch import nn
 import numpy as np
 from torchinfo import summary
 import sys
+import datetime
 
 # Calculate the mean and standard deviation of the dataset
 def calculate_dataset_statistics(file_list):
@@ -102,17 +103,17 @@ def train(opt):
 
     if learningmethod=='conv3d':
         # create 3dcnn model
-        model = ConvNet3D(batch_size=20, image_size=112).to(device)
+        model = ConvNet3D(batch_size=20, image_size=56).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     elif learningmethod=='convlstm':
         # create convlstm model
-        model = ConvLSTM_FC(input_dim=5, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3).to(device)
+        model = ConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     elif learningmethod=='vivit':
         # create vivit model
-        model = ViViT(image_size=112, patch_size=16, num_classes=2, num_frames=64, in_channels=5).to(device)
+        model = ViViT(image_size=56, patch_size=16, num_classes=2, num_frames=64, in_channels=3).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     else:
@@ -129,11 +130,11 @@ def train(opt):
     model.to(device)
 
     # output summary of used model
-    with open('model_summary_vivit.txt', 'w') as f:
+    with open('model_summary_conv3d.txt', 'w') as f:
         sys.stdout = f
         # setting the each input size
-        summary(model, input_size=(20, 64, 5, 224, 224)) # convlstm & vivit
-        # summary(model, input_size=(20, 5, 64, 224, 224)) # conv3d
+        # summary(model, input_size=(20, 64, 5, 224, 224)) # convlstm & vivit
+        summary(model, input_size=(20, 3, 32, 56, 56)) # conv3d
         sys.stdout = sys.__stdout__
 
     # Define a optimizer and learning rate
@@ -149,7 +150,7 @@ def train(opt):
     val_accuracies = []
 
     # Train the model
-    for epoch in range(epochs):  # Number of epochs
+    for epoch in tqdm(range(epochs)):  # Number of epochs
         train_loss = 0
         train_corrects = 0
         val_loss = 0
@@ -157,7 +158,7 @@ def train(opt):
         # change the model mode to train mode
         model.train()
         # train loading
-        for i, (inputs, labels) in tqdm(enumerate(train_loader, 0)):
+        for i, (inputs, labels) in enumerate(train_loader):
             # transfer inputs and labels to device
             inputs, labels = inputs.to(device), labels.to(device)
             # Zero the parameter gradients
@@ -173,13 +174,9 @@ def train(opt):
             loss = criterion(outputs, labels)
             _, preds = torch.max(outputs, 1)
             train_corrects += torch.sum(preds == labels).cpu().detach()
-            print('preds_train:',preds)
-            sys.stdout.flush()
-            print('labels_train:',labels)
-            sys.stdout.flush()
             loss.backward()
             optimizer.step()
-            train_loss += loss.item().cpu().detach()
+            train_loss += loss.item()
 
         train_loss /= len(train_loader)
         train_losses.append(train_loss)
@@ -189,20 +186,16 @@ def train(opt):
         val_loss = 0
 
         with torch.no_grad():
-            for i, (inputs, labels) in tqdm(enumerate(val_loader, 0)):
+            for i, (inputs, labels) in enumerate(val_loader):
                 inputs, labels = inputs.to(device), labels.to(device)
                 if inputs.dtype != torch.float32:
                     inputs = inputs.float()
                     
                 outputs = model(inputs)
 
-                val_loss += criterion(outputs, labels).item().cpu().detach()
+                val_loss += criterion(outputs, labels).item()
                 _, preds = torch.max(outputs, 1)
                 val_corrects += torch.sum(preds == labels).cpu().detach()
-                print('preds_val:',preds)
-                sys.stdout.flush()
-                print('labels_val:',labels)
-                sys.stdout.flush()
 
         val_loss /= len(val_loader)
         val_losses.append(val_loss)
@@ -247,6 +240,10 @@ def train(opt):
     plt.savefig(plot_save_name)
 
 if __name__=='__main__':
+    # get start time of program
+    start_time = datetime.datetime.now()
+    print('start time:',start_time)
+    sys.stdout.flush()
     # setting parser
     parser = argparse.ArgumentParser()
     parser.add_argument('--data',type=str, required=True, help='csv data')
@@ -262,5 +259,13 @@ if __name__=='__main__':
     print('-----biginning training-----')
     sys.stdout.flush()
     train(opt)
+    # get end time of program
+    end_time = datetime.datetime.now()
+    # calculate execution time with start and end time
+    execution_time = end_time - start_time
     print('-----completing training-----')
+    sys.stdout.flush()
+    print('end time:',end_time)
+    sys.stdout.flush()
+    print('Execution time: ', execution_time)
     sys.stdout.flush()

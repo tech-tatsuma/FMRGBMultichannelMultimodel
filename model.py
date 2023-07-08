@@ -7,7 +7,7 @@ from previvitmodel import Attention, PreNorm, FeedForward ,LeFF,  LCAttention
 
 
 class ConvNet3D(nn.Module):
-    def __init__(self, in_channels=5, num_classes=2, batch_size=20, image_size=112):
+    def __init__(self, in_channels=3, num_classes=2, batch_size=20, image_size=56):
         super(ConvNet3D, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv3d(in_channels, 16, kernel_size=3, stride=1, padding=1),
@@ -20,7 +20,7 @@ class ConvNet3D(nn.Module):
 
         # Here we are going to compute the size of Linear layer input
         self._to_linear = None
-        x = torch.randn(batch_size, in_channels, 64, image_size, image_size)  # Replace with your input shape
+        x = torch.randn(batch_size, in_channels, 32, image_size, image_size)  # Replace with your input shape
         self.convs(x)
 
         self.fc = nn.Sequential(
