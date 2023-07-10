@@ -113,7 +113,8 @@ def train(opt):
 
     elif learningmethod=='vivit':
         # create vivit model
-        model = ViViT(image_size=56, patch_size=16, num_classes=2, num_frames=64, in_channels=3).to(device)
+        # The image_size must be divisible by the PATCH size
+        model = ViViT(image_size=64, patch_size=16, num_classes=2, num_frames=64, in_channels=3).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     else:
@@ -130,11 +131,11 @@ def train(opt):
     model.to(device)
 
     # output summary of used model
-    with open('model_summary_conv3d.txt', 'w') as f:
+    with open('model_summary_vivit.txt', 'w') as f:
         sys.stdout = f
         # setting the each input size
-        # summary(model, input_size=(20, 64, 5, 224, 224)) # convlstm & vivit
-        summary(model, input_size=(20, 3, 32, 56, 56)) # conv3d
+        summary(model, input_size=(20, 64, 3, 64, 64)) # convlstm & vivit
+        # summary(model, input_size=(20, 3, 32, 56, 56)) # conv3d
         sys.stdout = sys.__stdout__
 
     # Define a optimizer and learning rate
