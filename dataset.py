@@ -9,7 +9,7 @@ from torchvision.transforms import Resize
 
 class VideoDataset(Dataset):
     # def __init__(self, df, transform=None, target_frames=64):
-    def __init__(self, file_list, transform=None, target_frames=32, target_size=(56, 56), isconvon=True):
+    def __init__(self, file_list, transform=None, target_frames=32, target_size=(64, 64), isconvon=True):
         self.file_list = file_list
         self.transform = transform
         self.target_frames = target_frames

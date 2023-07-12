@@ -117,7 +117,7 @@ class ConvLSTM_FC(ConvLSTM):
         self.dropout1 = nn.Dropout(0.4)
         self.dropout2 = nn.Dropout(0.25)
         self.fc = nn.Sequential(
-            nn.Linear(64, 128),  # 入力特徴量の次元を変更
+            nn.Linear(32, 128),  # 入力特徴量の次元を変更
             nn.ReLU(),
             self.dropout1,
             nn.Linear(128, 32),  # 追加の中間層
@@ -128,9 +128,12 @@ class ConvLSTM_FC(ConvLSTM):
 
     def forward(self, input_tensor, hidden_state=None):
         layer_output_list, last_state_list = super(ConvLSTM_FC, self).forward(input_tensor, hidden_state=hidden_state)
-        output = layer_output_list[-1][:, -1, :, :, :]  # 最後のレイヤーの最後のタイムステップの出力のみを取得
+        output = layer_output_list[-1][:, -1, :, :, :]  # 
+        print(f"Output shape before GAP: {output.shape}")
         output = self.gap(output)
+        print(f"Output shape after GAP: {output.shape}")
         output = output.reshape(output.size(0), -1)  # 出力をフラットな形に変形
+        print(f"Output shape after reshape: {output.shape}")
         output = self.fc(output)# 変形後の出力を全結合層に入力
         return output # モデルの出力を返す
 

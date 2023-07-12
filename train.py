@@ -131,12 +131,12 @@ def train(opt):
     model.to(device)
 
     # output summary of used model
-    with open('model_summary_vivit.txt', 'w') as f:
-        sys.stdout = f
-        # setting the each input size
-        summary(model, input_size=(20, 64, 3, 64, 64)) # convlstm & vivit
-        # summary(model, input_size=(20, 3, 32, 56, 56)) # conv3d
-        sys.stdout = sys.__stdout__
+    # with open('model_summary_vivit.txt', 'w') as f:
+    #     sys.stdout = f
+    #     # setting the each input size
+    #     summary(model, input_size=(20, 64, 3, 64, 64)) # convlstm & vivit
+    #     # summary(model, input_size=(20, 3, 32, 56, 56)) # conv3d
+    #     sys.stdout = sys.__stdout__
 
     # Define a optimizer and learning rate
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)

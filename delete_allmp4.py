@@ -8,6 +8,11 @@ def delete_mp4_files(opt):
         # ファイルを削除する
         os.remove(filename)
         print(f"Deleted file : {filename}")
+    
+    for filename in glob.glob(os.path.join(directory, '*.avi')):
+        # ファイルを削除する
+        os.remove(filename)
+        print(f"Deleted file : {filename}")
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
