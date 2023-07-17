@@ -24,14 +24,16 @@ class ConvNet3D(nn.Module):
         self.convs(x)
 
         self.fc = nn.Sequential(
-            nn.Linear(self._to_linear, 256),  
+            nn.Linear(self._to_linear, 256),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(256, 128),  
+            nn.Linear(256, 128),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(128, num_classes) 
+            nn.Linear(128, num_classes),
+            nn.Softmax(dim=1)  # クラス次元に沿ってsoftmaxを適用
         )
+
 
 
     def convs(self, x):
@@ -113,9 +115,12 @@ class ConvLSTM(nn.Module):
 class ConvLSTM_FC(ConvLSTM):
     def __init__(self, *args, **kwargs):
         super(ConvLSTM_FC, self).__init__(*args, **kwargs)
-        self.gap = nn.AdaptiveAvgPool2d(1)
-        self.dropout1 = nn.Dropout(0.4)
-        self.dropout2 = nn.Dropout(0.25)
+        self.attention = nn.Sequential(
+            nn.Conv2d(32, 1, kernel_size=1),  # 入力特徴量の次元を変更
+            nn.Sigmoid()
+        )
+        self.dropout1 = nn.Dropout(0.5)
+        self.dropout2 = nn.Dropout(0.5)
         self.fc = nn.Sequential(
             nn.Linear(32, 128),  # 入力特徴量の次元を変更
             nn.ReLU(),
@@ -123,14 +128,16 @@ class ConvLSTM_FC(ConvLSTM):
             nn.Linear(128, 32),  # 追加の中間層
             nn.ReLU(),
             self.dropout2,
-            nn.Linear(32, 2)  # 出力を2次元に変更
+            nn.Linear(32, 2),  # 出力を2次元に変更
+            nn.Softmax(dim=1)
         )
 
     def forward(self, input_tensor, hidden_state=None):
         layer_output_list, last_state_list = super(ConvLSTM_FC, self).forward(input_tensor, hidden_state=hidden_state)
         output = layer_output_list[-1][:, -1, :, :, :]  # 
         print(f"Output shape before GAP: {output.shape}")
-        output = self.gap(output)
+        attention_map = self.attention(output)
+        output = (output * attention_map).sum(dim=[2, 3])
         print(f"Output shape after GAP: {output.shape}")
         output = output.reshape(output.size(0), -1)  # 出力をフラットな形に変形
         print(f"Output shape after reshape: {output.shape}")
@@ -169,7 +176,11 @@ class ViViT(nn.Module):
         patch_dim = in_channels * patch_size ** 2
         self.to_patch_embedding = nn.Sequential(
             Rearrange('b t c (h p1) (w p2) -> b t (h w) (p1 p2 c)', p1 = patch_size, p2 = patch_size),
-            nn.Linear(patch_dim, dim),
+            nn.Linear(patch_dim, 128),
+            nn.Softmax(),
+            nn.Dropout(0.25),
+            nn.Linear(128, dim),
+            nn.Softmax(dim=1)
         )
 
         self.pos_embedding = nn.Parameter(torch.randn(1, num_frames, num_patches + 1, dim))

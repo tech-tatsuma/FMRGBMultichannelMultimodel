@@ -240,6 +240,8 @@ def train(opt):
     plot_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.png'
     plt.savefig(plot_save_name)
 
+    return train_loss, val_loss
+
 if __name__=='__main__':
     # get start time of program
     start_time = datetime.datetime.now()
@@ -253,13 +255,34 @@ if __name__=='__main__':
     parser.add_argument('--test_size', type=float, required=True, default=0.2, help='testdata_ratio')
     parser.add_argument('--patience', type=int, required=True, default=5, help='patience')
     parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm or vivit')
+    parser.add_argument('--islearnrate_search', type=str, default='false', help='is learningrate search ?')
     opt = parser.parse_args()
     # confirm the option
     print(opt)
     sys.stdout.flush()
-    print('-----biginning training-----')
-    sys.stdout.flush()
-    train(opt)
+    if opt.islearnrate_search == 'false':
+        print('-----biginning training-----')
+        sys.stdout.flush()
+        train(opt)
+    elif opt.islearnrate_search == 'true':
+        learning_rates = [0.01, 0.003, 0.002, 0.001, 0.0001]
+        best_loss = float('inf')
+        best_lr = 0
+        for lr in learning_rates:
+            opt.lr = lr
+            print(f"\nTraining with learning rate: {lr}")
+            sys.stdout.flush()
+            print('-----beginning training-----')
+            sys.stdout.flush()
+        
+            train_loss, val_loss = train(opt)
+        
+            if val_loss < best_loss:
+                best_loss = val_loss
+                best_lr = lr
+        print(f"Best learning rate: {best_lr}")
+    else:
+        print('入力が適切ではありません：islearnrate_search')
     # get end time of program
     end_time = datetime.datetime.now()
     # calculate execution time with start and end time

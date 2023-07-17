@@ -17,7 +17,7 @@ Delete all unresized mp4 data in the target folder.
 
 ### Creation of data sets
 ```
-python create_fmrgbdata.py --target <data folder> --audiomethod <simple or mel> --frequency_param <Frequency analysis parameters（int）> --fmrgb <true or false>
+python create_fmrgbdata.py --target <data folder> --audiomethod <simple or mel> --frequency_param <Frequency analysis parameters（int）> --fmrgb <3 or 5 channels>
 ```
 target: Specification of the directory containing the video data (pt format data) to be converted to fmrgb data.
 
@@ -39,7 +39,7 @@ python visualize.py --target <ptファイル>
 Program to visualise 5 channel pt data.
 ### FMRGB multi-channel model training.
 ```
-python train.py --data <csvデータ> --epochs <学習回数> --test_size <テストデータの割合指定> --patience <早期終了パラメータ> --learnmethod <conv3d or convlstm>
+python train.py --data <csvデータ> --epochs <学習回数> --test_size <テストデータの割合指定> --patience <早期終了パラメータ> --learnmethod <conv3d or convlstm or vivit> --islearnrate_search <true or false>
 ```
 Main program to train data. In this program, dataset.py and model.py are called and use them effeciently.
 In the model.py, conv3d and convlstm are defined. You can specify the method by using the learnmethod option.
