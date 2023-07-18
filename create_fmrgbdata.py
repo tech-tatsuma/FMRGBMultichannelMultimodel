@@ -33,7 +33,7 @@ def stereo_to_mono(audio_samples):
     return audio_samples[::2] / 2 + audio_samples[1::2] / 2
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
-def process_video_withmel(video_path, max_frames, parameter, isfmrgb):
+def process_video_withmel(video_path, max_frames, parameter, isfmrgb, skip):
     # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -110,29 +110,30 @@ def process_video_withmel(video_path, max_frames, parameter, isfmrgb):
         if not ret:
             break
         if frame_count < len(audio_samples):
-            # RGBに変換する
-            if isfmrgb=='true':
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            elif isfmrgb=='false':
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            if frame_count%skip == 0:
+                # RGBに変換する
+                if isfmrgb=='true':
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                elif isfmrgb=='false':
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                else:
+                    print('入力が適切ではありません')
+                    return
+                # 振幅データを取得
+                amplitude = np.abs(audio_samples[frame_count])
+                # 振幅を0-255の範囲にリサイズ
+                resized_amplitude = (amplitude / max_amplitude) * 255
+                # 正規化した振幅情報で画像を埋める
+                amp_channel = np.full(frame.shape[:2], int(resized_amplitude))
+                # 正規化したスペクトログラムで画像を埋める
+                spectrogram_channel = results[frame_count]
+                # 5チャンネル画像を生成する
+                frame = np.dstack((frame, amp_channel, spectrogram_channel))
+                # frames配列に追加
+                frames.append(frame)
             else:
-                print('入力が適切ではありません')
-                return
-            # 振幅データを取得
-            amplitude = np.abs(audio_samples[frame_count])
-            # 振幅を0-255の範囲にリサイズ
-            resized_amplitude = (amplitude / max_amplitude) * 255
-            # 正規化した振幅情報で画像を埋める
-            amp_channel = np.full(frame.shape[:2], int(resized_amplitude))
-            # 正規化したスペクトログラムで画像を埋める
-            spectrogram_channel = results[frame_count]
-            # 5チャンネル画像を生成する
-            frame = np.dstack((frame, amp_channel, spectrogram_channel))
-            # frames配列に追加
-            frames.append(frame)
-        else:
-            print(f'Frame count {frame_count} exceeds audio sample length. Stopping processing.')
-            break
+                print(f'Frame count {frame_count} exceeds audio sample length. Stopping processing.')
+                break
         frame_count += 1
         pbar.update(1)
     # frames配列を構成する
@@ -143,7 +144,7 @@ def process_video_withmel(video_path, max_frames, parameter, isfmrgb):
     torch.save(torch.from_numpy(frames), video_path + '.pt')
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
-def process_video(video_path, max_frames, parameter, isfmrgb):
+def process_video(video_path, max_frames, parameter, isfmrgb, skip):
     # ビデオを読み込む
     video = cv2.VideoCapture(video_path)
     # ビデオのfpsを取得する
@@ -199,33 +200,33 @@ def process_video(video_path, max_frames, parameter, isfmrgb):
     frame_count = 0
     while True:
         ret, frame = video.read()
-
         if not ret:
             break
         if frame_count < len(audio_samples):
-            # RGBに変換する
-            if isfmrgb=='true':
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            elif isfmrgb=='false':
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            if frame_count%skip == 0:
+                # RGBに変換する
+                if isfmrgb=='true':
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                elif isfmrgb=='false':
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                else:
+                    print('入力が適切ではありません')
+                    return
+                # 振幅データを取得
+                amplitude = np.abs(audio_samples[frame_count])
+                # 振幅を0-255の範囲にリサイズ
+                resized_amplitude = (amplitude / max_amplitude) * 255
+                # 正規化した振幅情報で画像を埋める
+                amp_channel = np.full(frame.shape[:2], int(resized_amplitude))
+                # 正規化したスペクトログラムで画像を埋める
+                spectrogram_channel = np.full(frame.shape[:2], int(results[frame_count]))
+                # 5チャンネル画像を生成する
+                frame = np.dstack((frame, amp_channel, spectrogram_channel))
+                # frames配列に追加
+                frames.append(frame)
             else:
-                print('入力が適切ではありません')
-                return
-            # 振幅データを取得
-            amplitude = np.abs(audio_samples[frame_count])
-            # 振幅を0-255の範囲にリサイズ
-            resized_amplitude = (amplitude / max_amplitude) * 255
-            # 正規化した振幅情報で画像を埋める
-            amp_channel = np.full(frame.shape[:2], int(resized_amplitude))
-            # 正規化したスペクトログラムで画像を埋める
-            spectrogram_channel = np.full(frame.shape[:2], int(results[frame_count]))
-            # 5チャンネル画像を生成する
-            frame = np.dstack((frame, amp_channel, spectrogram_channel))
-            # frames配列に追加
-            frames.append(frame)
-        else:
-            print(f'Frame count {frame_count} exceeds audio sample length. Stopping processing.')
-            break
+                print(f'Frame count {frame_count} exceeds audio sample length. Stopping processing.')
+                break
         frame_count += 1
         pbar.update(1)
 
@@ -242,13 +243,14 @@ def process_directory(opt):
     directory_path = opt.target
     parameter = opt.frequency_param
     isfmrgb = opt.fmrgb
+    skip = opt.skip
     max_frames = get_max_frames(directory_path)
     for filename in os.listdir(directory_path):
         if filename.endswith('.mp4'):
             if audio_process_method=='simple':
-                process_video(os.path.join(directory_path, filename), max_frames, parameter, isfmrgb)
+                process_video(os.path.join(directory_path, filename), max_frames, parameter, isfmrgb, skip)
             elif audio_process_method=='mel':
-                process_video_withmel(os.path.join(directory_path, filename), max_frames, parameter, isfmrgb)
+                process_video_withmel(os.path.join(directory_path, filename), max_frames, parameter, isfmrgb, skip)
             else:
                 print('音声を処理するメソッドの指定が適切ではありません')
 
@@ -258,6 +260,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--target',type=str, required=True, help='folder')
     parser.add_argument('--audiomethod',type=str, default='simple', help='audio method')
+    parser.add_argument('--skip', type=int, default='1', help='num of skip')
     parser.add_argument('--frequency_param', type=int, default=100, help='frequency parameter')
     parser.add_argument('--fmrgb', type=str, default='true', help='fmrgb or not true false')
     opt = parser.parse_args()

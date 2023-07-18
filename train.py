@@ -3,6 +3,7 @@ from model import ConvNet3D, ConvLSTM_FC, ViViT
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
+from torch.optim.lr_scheduler import StepLR
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -61,6 +62,7 @@ def train(opt):
     patience = opt.patience
     learningmethod = opt.learnmethod
     learning_rate = opt.lr
+    usescheduler = opt.usescheduler
 
     # get the all file list
     file_list = glob.glob(os.path.join(opt.data, '**', '*.pt'), recursive=True)
@@ -140,6 +142,10 @@ def train(opt):
 
     # Define a optimizer and learning rate
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+    if usescheduler == 'true':
+        scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
+
     # Initialize variables for Early Stopping
     val_loss_min = None
     val_loss_min_epoch = 0
@@ -221,6 +227,8 @@ def train(opt):
         elif (epoch - val_loss_min_epoch) >= patience:
             print('Early stopping due to validation loss not improving for {} epochs'.format(patience))
             break
+        if usescheduler == 'true':
+            scheduler.step()
 
     # Plotting the training and validation progress
     plt.figure(figsize=(10, 5))
@@ -256,6 +264,7 @@ if __name__=='__main__':
     parser.add_argument('--patience', type=int, required=True, default=5, help='patience')
     parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm or vivit')
     parser.add_argument('--islearnrate_search', type=str, default='false', help='is learningrate search ?')
+    parser.add_argument('--usescheduler', type=str, default='false', help='use lr scheduler true or false')
     opt = parser.parse_args()
     # confirm the option
     print(opt)
