@@ -17,7 +17,7 @@ Delete all unresized mp4 data in the target folder.
 
 ### Creation of data sets
 ```
-python create_fmrgbdata.py --target <data folder> --audiomethod <simple or mel> --frequency_param <Frequency analysis parameters（int）> --fmrgb <3 or 5 channels>
+python create_fmrgbdata.py --target <data folder> --audiomethod <simple or mel> --skip <num of skip> --frequency_param <Frequency analysis parameters（int）> --fmrgb <3 or 5 channels>
 ```
 target: Specification of the directory containing the video data (pt format data) to be converted to fmrgb data.
 
