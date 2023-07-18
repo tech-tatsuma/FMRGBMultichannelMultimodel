@@ -248,7 +248,7 @@ def train(opt):
     plot_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.png'
     plt.savefig(plot_save_name)
 
-    return train_loss, val_loss
+    return train_loss, val_loss_min
 
 if __name__=='__main__':
     # get start time of program
