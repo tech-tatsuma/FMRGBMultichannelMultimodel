@@ -36,6 +36,7 @@ def calculate_dataset_statistics(file_list):
 
     return mean.tolist(), std.tolist()
 
+
 class Normalize3D(object):
     def __init__(self, mean, std):
         self.mean = mean
@@ -50,8 +51,11 @@ class Normalize3D(object):
             for t, m, s in zip(tensor.permute(2, 0, 1, 3, 4), self.mean, self.std):
                 t.sub_(m).div_(s)
         return tensor
+
+
 # main train function
 def train(opt):
+
     # setting the device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
@@ -66,8 +70,10 @@ def train(opt):
 
     # get the all file list
     file_list = glob.glob(os.path.join(opt.data, '**', '*.pt'), recursive=True)
+
     # calculate mean and std value
     mean, std = calculate_dataset_statistics(file_list)
+
     # define transform
     transform = transforms.Compose([
         transforms.ToTensor(),
@@ -96,13 +102,14 @@ def train(opt):
         # test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
 
     else:
-        print('error: 入力が不適切です')
+        print('error: inappropriate input(learning method)')
         return
 
     # Create dataloaders
     train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
 
+    # setting learning network
     if learningmethod=='conv3d':
         # create 3dcnn model
         model = ConvNet3D(batch_size=20, image_size=56).to(device)
@@ -120,7 +127,7 @@ def train(opt):
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     else:
-        print('error: 入力が不適切です')
+        print('error: inappropriate input(learning method)')
         return
 
     # code to use multi GPU
@@ -143,6 +150,7 @@ def train(opt):
     # Define a optimizer and learning rate
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
+    # scheduler setting
     if usescheduler == 'true':
         scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
@@ -259,9 +267,9 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data',type=str, required=True, help='csv data')
     parser.add_argument('--epochs',type=int, required=True, help='epochs')
-    parser.add_argument('--lr',type=float, required=True, help='learning rate')
-    parser.add_argument('--test_size', type=float, required=True, default=0.2, help='testdata_ratio')
-    parser.add_argument('--patience', type=int, required=True, default=5, help='patience')
+    parser.add_argument('--lr',type=float, default=0.001, help='learning rate')
+    parser.add_argument('--test_size', type=float, default=0.2, help='testdata_ratio')
+    parser.add_argument('--patience', type=int, default=5, help='patience')
     parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm or vivit')
     parser.add_argument('--islearnrate_search', type=str, default='false', help='is learningrate search ?')
     parser.add_argument('--usescheduler', type=str, default='false', help='use lr scheduler true or false')
@@ -269,12 +277,16 @@ if __name__=='__main__':
     # confirm the option
     print(opt)
     sys.stdout.flush()
+
     if opt.islearnrate_search == 'false':
         print('-----biginning training-----')
         sys.stdout.flush()
-        train(opt)
+        train_loss, val_loss = train(opt)
+        print('final validation loss: ', val_loss)
+        sys.stdout.flush()
+
     elif opt.islearnrate_search == 'true':
-        learning_rates = [0.01, 0.003, 0.002, 0.001, 0.0001]
+        learning_rates = [0.01, 0.003, 0.002, 0.001, 0.0008]
         best_loss = float('inf')
         best_lr = 0
         for lr in learning_rates:
@@ -289,9 +301,13 @@ if __name__=='__main__':
             if val_loss < best_loss:
                 best_loss = val_loss
                 best_lr = lr
+        print('best validation loss: ', best_loss)
+        sys.stdout.flush()
         print(f"Best learning rate: {best_lr}")
+        sys.stdout.flush()
+
     else:
-        print('入力が適切ではありません：islearnrate_search')
+        print('error: inappropriate input(islearnrate_search)')
     # get end time of program
     end_time = datetime.datetime.now()
     # calculate execution time with start and end time
