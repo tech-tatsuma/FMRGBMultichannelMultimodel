@@ -164,8 +164,8 @@ class Transformer(nn.Module):
 
   
 class ViViT(nn.Module):
-    def __init__(self, image_size, patch_size, num_classes, num_frames, dim = 192, depth = 4, heads = 3, pool = 'cls', in_channels = 3, dim_head = 64, dropout = 0.,
-                 emb_dropout = 0., scale_dim = 4, ):
+    def __init__(self, image_size, patch_size, num_classes, num_frames, dim = 192, depth = 4, heads = 3, pool = 'cls', in_channels = 3, dim_head = 64, dropout = 0.5,
+                 emb_dropout = 0.5, scale_dim = 4, ):
         super().__init__()
         
         assert pool in {'cls', 'mean'}, 'pool type must be either cls (cls token) or mean (mean pooling)'
