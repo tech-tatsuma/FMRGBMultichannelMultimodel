@@ -16,6 +16,15 @@ import numpy as np
 from torchinfo import summary
 import sys
 import datetime
+import random
+
+def seed_everything(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 # Calculate the mean and standard deviation of the dataset
 def calculate_dataset_statistics(file_list):
@@ -55,6 +64,8 @@ class Normalize3D(object):
 
 # main train function
 def train(opt):
+
+    seed_everything(opt.seed)
 
     # setting the device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -112,7 +123,7 @@ def train(opt):
     # setting learning network
     if learningmethod=='conv3d':
         # create 3dcnn model
-        model = ConvNet3D(batch_size=20, image_size=56).to(device)
+        model = ConvNet3D(batch_size=20, image_size=64).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     elif learningmethod=='convlstm':
@@ -273,6 +284,7 @@ if __name__=='__main__':
     parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm or vivit')
     parser.add_argument('--islearnrate_search', type=str, default='false', help='is learningrate search ?')
     parser.add_argument('--usescheduler', type=str, default='false', help='use lr scheduler true or false')
+    parser.add_argument('--seed', type=int, default=42, help='Seed for random number generators')
     opt = parser.parse_args()
     # confirm the option
     print(opt)
@@ -286,7 +298,7 @@ if __name__=='__main__':
         sys.stdout.flush()
 
     elif opt.islearnrate_search == 'true':
-        learning_rates = [0.01, 0.003, 0.002, 0.001, 0.0008]
+        learning_rates = [0.001, 0.0007, 0.0005, 0.0003, 0.0001]
         best_loss = float('inf')
         best_lr = 0
         for lr in learning_rates:

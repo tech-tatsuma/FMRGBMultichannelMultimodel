@@ -10,12 +10,12 @@ class ConvNet3D(nn.Module):
     def __init__(self, in_channels=3, num_classes=2, batch_size=20, image_size=56):
         super(ConvNet3D, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv3d(in_channels, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv3d(in_channels, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool3d(2),
-            nn.Conv3d(16, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool3d(2),
+            # nn.Conv3d(16, 32, kernel_size=3, stride=1, padding=1),
+            # nn.ReLU(),
+            # nn.MaxPool3d(2),
         )
 
         # Here we are going to compute the size of Linear layer input
@@ -24,14 +24,14 @@ class ConvNet3D(nn.Module):
         self.convs(x)
 
         self.fc = nn.Sequential(
-            nn.Linear(self._to_linear, 256),
+            nn.Linear(self._to_linear, 128),
             nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(256, 128),
+            nn.Dropout(0.25),
+            nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(128, num_classes),
-            nn.Softmax(dim=1)  # クラス次元に沿ってsoftmaxを適用
+            nn.Dropout(0.25),
+            nn.Linear(64, num_classes),
+            # nn.Softmax(dim=1)  # クラス次元に沿ってsoftmaxを適用
         )
 
 
