@@ -223,21 +223,72 @@ class ViViT(nn.Module):
         return self.mlp_head(x)
 
 
-# DeformConv2dの定義
-class DeformConv2d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, padding=0, stride=1, bias=True):
-        super(DeformConv2d, self).__init__()
+# 新しいDeformable Convolutionの定義
+class DeformableConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1):
+        super(DeformableConv2d, self).__init__()
+
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, 
+                              stride=stride, padding=padding, dilation=dilation)
         
-        self.offset_conv = nn.Conv2d(in_channels, 2 * kernel_size * kernel_size, kernel_size=kernel_size, padding=padding, stride=stride, bias=bias)
-        self.main_conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding, stride=stride, bias=bias)
-
+        self.conv_offset = nn.Conv2d(in_channels, 2 * kernel_size * kernel_size, kernel_size=kernel_size, 
+                                     stride=stride, padding=padding, dilation=dilation)
+        
     def forward(self, x):
-        offset = self.offset_conv(x)
-        offset = offset.view(offset.size(0), 2, -1, offset.size(2), offset.size(3))
+        offset = self.conv_offset(x)
+        offset = offset.permute(0, 2, 3, 1)
+        
+        dtype = offset.data.type()
+        N, C, H, W = x.size()
+        y = torch.arange(0, H).view(-1, 1).repeat(1, W)
+        x = torch.arange(0, W).repeat(H, 1)
+        y = y.view(1, H, W).repeat(N, 1, 1)
+        x = x.view(1, H, W).repeat(N, 1, 1)
+        xy = torch.stack([x, y], dim=-1)
+        
+        xy = xy.to(dtype).add(offset).view(N, H, W, 2)
+        x = torch.clamp(xy[..., 0], 0, W-1)
+        y = torch.clamp(xy[..., 1], 0, H-1)
+        
+        x0 = torch.floor(x).int()
+        x1 = x0 + 1
+        y0 = torch.floor(y).int()
+        y1 = y0 + 1
 
-        x = F.grid_sample(x, (torch.nn.functional.affine_grid(offset, x.size()).permute(0, 2, 3, 1) + 1) / 2)
-        x = self.main_conv(x)
-        return x
+        x0 = torch.clamp(x0, 0, W-1)
+        x1 = torch.clamp(x1, 0, W-1)
+        y0 = torch.clamp(y0, 0, H-1)
+        y1 = torch.clamp(y1, 0, H-1)
+
+        Ia = x - x0.float()
+        Ib = 1 - Ia
+        Ic = y - y0.float()
+        Id = 1 - Ic
+
+        wa = Ib * Id
+        wb = Ia * Id
+        wc = Ib * Ic
+        wd = Ia * Ic
+
+        x0 = x0.view(N, 1, H, W).repeat(1, C, 1, 1)
+        x1 = x1.view(N, 1, H, W).repeat(1, C, 1, 1)
+        y0 = y0.view(N, 1, H, W).repeat(1, C, 1, 1)
+        y1 = y1.view(N, 1, H, W).repeat(1, C, 1, 1)
+
+        Ia = wa.view(N, 1, H, W).repeat(1, C, 1, 1) * x.data.gather(2, y0).gather(3, x0)
+        Ib = wb.view(N, 1, H, W).repeat(1, C, 1, 1) * x.data.gather(2, y0).gather(3, x1)
+        Ic = wc.view(N, 1, H, W).repeat(1, C, 1, 1) * x.data.gather(2, y1).gather(3, x0)
+        Id = wd.view(N, 1, H, W).repeat(1, C, 1, 1) * x.data.gather(2, y1).gather(3, x1)
+
+        out = Ia + Ib + Ic + Id
+        out = self.conv(out)
+
+        return out
 
 class DeformConvLSTMCell(nn.Module):
     def __init__(self, input_dim, hidden_dim, kernel_size, bias):
@@ -246,11 +297,11 @@ class DeformConvLSTMCell(nn.Module):
         self.hidden_dim = hidden_dim
         padding = (kernel_size[0] // 2, kernel_size[1] // 2)
 
-        self.conv = DeformConv2d(in_channels=input_dim + hidden_dim,
-                                 out_channels=4 * hidden_dim,
-                                 kernel_size=kernel_size,
-                                 padding=padding,
-                                 bias=bias)
+        self.conv = DeformableConv2d(in_channels=input_dim + hidden_dim,
+                                     out_channels=4 * hidden_dim,
+                                     kernel_size=kernel_size,
+                                     padding=padding,
+                                     bias=bias)
 
     def forward(self, input_tensor, cur_state):
         h_cur, c_cur = cur_state
@@ -260,8 +311,8 @@ class DeformConvLSTMCell(nn.Module):
         return o * torch.tanh(c_next), c_next
 
     def init_hidden(self, batch_size, image_size):
-        return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.main_conv.weight.device),
-                torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.main_conv.weight.device))
+        return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.conv.weight.device),
+                torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.conv.weight.device))
 
 class DeformConvLSTM(ConvLSTM):
     def __init__(self, *args, **kwargs):

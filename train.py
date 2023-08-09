@@ -304,7 +304,7 @@ if __name__=='__main__':
         sys.stdout.flush()
 
     elif opt.islearnrate_search == 'true':
-        learning_rates = [0.000005, 0.000001, 0.0000005, 0.0000001, 0.00000001]
+        learning_rates = [0.01, 0.001, 0.0001, 0.00001]
         best_loss = float('inf')
         best_lr = 0
         for lr in learning_rates:

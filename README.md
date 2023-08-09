@@ -39,7 +39,7 @@ python visualize.py --target <pt data>
 Program to visualise 5 channel pt data.
 ### FMRGB multi-channel model training.
 ```
-python train.py --data <csvデータ> --epochs <num of epochs> --test_size <rate of testdata> --patience <patience> --learnmethod <conv3d or convlstm or vivit> --islearnrate_search <true or false> --usescheduler <use learning rate scheduler?>
+python train.py --data <csvデータ> --epochs <num of epochs> --test_size <rate of testdata> --patience <patience> --learnmethod <conv3d or convlstm or vivit or convlstmwithdcn> --islearnrate_search <true or false> --usescheduler <use learning rate scheduler?>
 ```
 Main program to train data. In this program, dataset.py and model.py are called and use them effeciently.
 In the model.py, conv3d and convlstm are defined. You can specify the method by using the learnmethod option.
