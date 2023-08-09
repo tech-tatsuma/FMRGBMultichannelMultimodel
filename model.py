@@ -3,7 +3,8 @@ import torch
 import torch.nn.functional as f
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
-from previvitmodel import Attention, PreNorm, FeedForward ,LeFF,  LCAttention
+from previvitmodel import Attention, PreNorm, FeedForward
+import torch.nn as nn
 
 
 class ConvNet3D(nn.Module):
@@ -164,8 +165,8 @@ class Transformer(nn.Module):
 
   
 class ViViT(nn.Module):
-    def __init__(self, image_size, patch_size, num_classes, num_frames, dim = 192, depth = 4, heads = 3, pool = 'cls', in_channels = 3, dim_head = 64, dropout = 0.5,
-                 emb_dropout = 0.5, scale_dim = 4, ):
+    def __init__(self, image_size, patch_size, num_classes, num_frames, dim = 192, depth = 4, heads = 3, pool = 'cls', in_channels = 3, dim_head = 64, dropout = 0.,
+                 emb_dropout = 0., scale_dim = 4, ):
         super().__init__()
         
         assert pool in {'cls', 'mean'}, 'pool type must be either cls (cls token) or mean (mean pooling)'
@@ -180,7 +181,6 @@ class ViViT(nn.Module):
             nn.Softmax(),
             nn.Dropout(0.25),
             nn.Linear(128, dim),
-            nn.Softmax(dim=1)
         )
 
         self.pos_embedding = nn.Parameter(torch.randn(1, num_frames, num_patches + 1, dim))
@@ -221,3 +221,59 @@ class ViViT(nn.Module):
         x = x.mean(dim = 1) if self.pool == 'mean' else x[:, 0]
 
         return self.mlp_head(x)
+
+
+# DeformConv2dの定義
+class DeformConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, padding=0, stride=1, bias=True):
+        super(DeformConv2d, self).__init__()
+        
+        self.offset_conv = nn.Conv2d(in_channels, 2 * kernel_size * kernel_size, kernel_size=kernel_size, padding=padding, stride=stride, bias=bias)
+        self.main_conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding, stride=stride, bias=bias)
+
+    def forward(self, x):
+        offset = self.offset_conv(x)
+        offset = offset.view(offset.size(0), 2, -1, offset.size(2), offset.size(3))
+
+        x = F.grid_sample(x, (torch.nn.functional.affine_grid(offset, x.size()).permute(0, 2, 3, 1) + 1) / 2)
+        x = self.main_conv(x)
+        return x
+
+class DeformConvLSTMCell(nn.Module):
+    def __init__(self, input_dim, hidden_dim, kernel_size, bias):
+        super(DeformConvLSTMCell, self).__init__()
+        
+        self.hidden_dim = hidden_dim
+        padding = (kernel_size[0] // 2, kernel_size[1] // 2)
+
+        self.conv = DeformConv2d(in_channels=input_dim + hidden_dim,
+                                 out_channels=4 * hidden_dim,
+                                 kernel_size=kernel_size,
+                                 padding=padding,
+                                 bias=bias)
+
+    def forward(self, input_tensor, cur_state):
+        h_cur, c_cur = cur_state
+        combined_conv = self.conv(torch.cat([input_tensor, h_cur], dim=1))
+        i, f, o, g = torch.sigmoid(combined_conv).chunk(4, dim=1)
+        c_next = f * c_cur + i * torch.tanh(g)
+        return o * torch.tanh(c_next), c_next
+
+    def init_hidden(self, batch_size, image_size):
+        return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.main_conv.weight.device),
+                torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.main_conv.weight.device))
+
+class DeformConvLSTM(ConvLSTM):
+    def __init__(self, *args, **kwargs):
+        super(DeformConvLSTM, self).__init__(*args, **kwargs)
+
+    def _init_cell(self, input_dim, hidden_dim, kernel_size, bias):
+        return DeformConvLSTMCell(input_dim, hidden_dim, kernel_size, bias)
+
+class ConvLSTM_FC_Deform(ConvLSTM_FC):
+    def __init__(self, *args, **kwargs):
+        super(ConvLSTM_FC_Deform, self).__init__(*args, **kwargs)
+
+    def _init_cell(self, input_dim, hidden_dim, kernel_size, bias):
+        return DeformConvLSTMCell(input_dim, hidden_dim, kernel_size, bias)
+

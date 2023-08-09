@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC, ViViT
+from model import ConvNet3D, ConvLSTM_FC, ViViT, ConvLSTM_FC_Deform
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -111,6 +111,9 @@ def train(opt):
         train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
         val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
         # test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
+    elif learningmethod=='convlstmwithdcn':
+        train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
+        val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
 
     else:
         print('error: inappropriate input(learning method)')
@@ -137,6 +140,9 @@ def train(opt):
         model = ViViT(image_size=64, patch_size=16, num_classes=2, num_frames=64, in_channels=3).to(device)
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
+    elif learningmethod=='convlstmwithdcn':
+        model = ConvLSTM_FC_Deform(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
+        criterion = nn.CrossEntropyLoss()
     else:
         print('error: inappropriate input(learning method)')
         return
@@ -298,7 +304,7 @@ if __name__=='__main__':
         sys.stdout.flush()
 
     elif opt.islearnrate_search == 'true':
-        learning_rates = [0.001, 0.0007, 0.0005, 0.0003, 0.0001]
+        learning_rates = [0.000005, 0.000001, 0.0000005, 0.0000001, 0.00000001]
         best_loss = float('inf')
         best_lr = 0
         for lr in learning_rates:
