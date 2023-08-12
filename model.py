@@ -6,7 +6,7 @@ from einops.layers.torch import Rearrange
 from previvitmodel import Attention, PreNorm, FeedForward
 import torch.nn as nn
 
-
+# 3dcnn
 class ConvNet3D(nn.Module):
     def __init__(self, in_channels=3, num_classes=2, batch_size=20, image_size=56):
         super(ConvNet3D, self).__init__()
@@ -49,7 +49,7 @@ class ConvNet3D(nn.Module):
         x = self.fc(x)
         return x
 
-
+# convlstm
 class ConvLSTMCell(nn.Module):
     def __init__(self, input_dim, hidden_dim, kernel_size, bias):
         super(ConvLSTMCell, self).__init__()
@@ -145,6 +145,7 @@ class ConvLSTM_FC(ConvLSTM):
         output = self.fc(output)# 変形後の出力を全結合層に入力
         return output # モデルの出力を返す
 
+# ViViT
 class Transformer(nn.Module):
     def __init__(self, dim, depth, heads, dim_head, mlp_dim, dropout = 0.):
         super().__init__()
@@ -222,8 +223,7 @@ class ViViT(nn.Module):
 
         return self.mlp_head(x)
 
-
-# 新しいDeformable Convolutionの定義
+# convlstm with dcn
 class DeformableConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1):
         super(DeformableConv2d, self).__init__()
@@ -314,6 +314,7 @@ class DeformConvLSTMCell(nn.Module):
         return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.conv.weight.device),
                 torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.conv.weight.device))
 
+# same as normal convlstm
 class DeformConvLSTM(ConvLSTM):
     def __init__(self, *args, **kwargs):
         super(DeformConvLSTM, self).__init__(*args, **kwargs)

@@ -18,6 +18,7 @@ import sys
 import datetime
 import random
 
+# setting the seed value
 def seed_everything(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -96,7 +97,7 @@ def train(opt):
     # train_files, val_files = train_test_split(train_files, test_size=test_size, random_state=42)
     train_files, val_files = train_test_split(file_list, test_size=test_size, random_state=42)
 
-    # create datasets
+    # create datasets for each model
     if learningmethod=='conv3d':
         train_dataset = VideoDataset(train_files, transform=transform)
         val_dataset = VideoDataset(val_files, transform=transform)
@@ -111,10 +112,13 @@ def train(opt):
         train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
         val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
         # test_dataset = VideoDataset(test_files, transform=transform, isconvon=False)
+
+    # convlstmwithdcn datasets have the same shape with convlstm
     elif learningmethod=='convlstmwithdcn':
         train_dataset = VideoDataset(train_files, transform=transform, isconvon=False)
         val_dataset = VideoDataset(val_files, transform=transform, isconvon=False)
 
+    # error
     else:
         print('error: inappropriate input(learning method)')
         return
@@ -141,9 +145,11 @@ def train(opt):
         criterion = nn.CrossEntropyLoss()  # Use crosentropy for bi-problem
 
     elif learningmethod=='convlstmwithdcn':
+        # create convlstm with DCN model
         model = ConvLSTM_FC_Deform(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
         criterion = nn.CrossEntropyLoss()
     else:
+        # error
         print('error: inappropriate input(learning method)')
         return
 
@@ -155,14 +161,6 @@ def train(opt):
 
     # transfer model to device
     model.to(device)
-
-    # output summary of used model
-    # with open('model_summary_vivit.txt', 'w') as f:
-    #     sys.stdout = f
-    #     # setting the each input size
-    #     summary(model, input_size=(20, 64, 3, 64, 64)) # convlstm & vivit
-    #     # summary(model, input_size=(20, 3, 32, 56, 56)) # conv3d
-    #     sys.stdout = sys.__stdout__
 
     # Define a optimizer and learning rate
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -183,12 +181,15 @@ def train(opt):
 
     # Train the model
     for epoch in tqdm(range(epochs)):  # Number of epochs
+
         train_loss = 0
         train_corrects = 0
         val_loss = 0
         val_corrects = 0
+
         # change the model mode to train mode
         model.train()
+
         # train loading
         for i, (inputs, labels) in enumerate(train_loader):
             # transfer inputs and labels to device
@@ -216,7 +217,8 @@ def train(opt):
         train_accuracies.append(train_accuracy.item())
         model.eval()
         val_loss = 0
-
+        
+        # calculate validation value
         with torch.no_grad():
             for i, (inputs, labels) in enumerate(val_loader):
                 inputs, labels = inputs.to(device), labels.to(device)
@@ -243,7 +245,7 @@ def train(opt):
 
         # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.pt'
+            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}withoutsoftmax.pt'
             torch.save(model.state_dict(), model_save_name)
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
@@ -270,7 +272,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plot_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.png'
+    plot_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}withoutsoftmax.png'
     plt.savefig(plot_save_name)
 
     return train_loss, val_loss_min
