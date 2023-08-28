@@ -5,6 +5,7 @@ from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
 from previvitmodel import Attention, PreNorm, FeedForward
 import torch.nn as nn
+from ops_dcnv3.modules.dcnv3 import DCNv3
 
 # 3dcnn
 class ConvNet3D(nn.Module):
@@ -223,109 +224,91 @@ class ViViT(nn.Module):
 
         return self.mlp_head(x)
 
-# convlstm with dcn
-class DeformableConv2d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1):
-        super(DeformableConv2d, self).__init__()
-
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
-        self.dilation = dilation
-
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, 
-                              stride=stride, padding=padding, dilation=dilation)
-        
-        self.conv_offset = nn.Conv2d(in_channels, 2 * kernel_size * kernel_size, kernel_size=kernel_size, 
-                                     stride=stride, padding=padding, dilation=dilation)
-        
-    def forward(self, x):
-        offset = self.conv_offset(x)
-        offset = offset.permute(0, 2, 3, 1)
-        
-        dtype = offset.data.type()
-        N, C, H, W = x.size()
-        y = torch.arange(0, H).view(-1, 1).repeat(1, W)
-        x = torch.arange(0, W).repeat(H, 1)
-        y = y.view(1, H, W).repeat(N, 1, 1)
-        x = x.view(1, H, W).repeat(N, 1, 1)
-        xy = torch.stack([x, y], dim=-1)
-        
-        xy = xy.to(dtype).add(offset).view(N, H, W, 2)
-        x = torch.clamp(xy[..., 0], 0, W-1)
-        y = torch.clamp(xy[..., 1], 0, H-1)
-        
-        x0 = torch.floor(x).int()
-        x1 = x0 + 1
-        y0 = torch.floor(y).int()
-        y1 = y0 + 1
-
-        x0 = torch.clamp(x0, 0, W-1)
-        x1 = torch.clamp(x1, 0, W-1)
-        y0 = torch.clamp(y0, 0, H-1)
-        y1 = torch.clamp(y1, 0, H-1)
-
-        Ia = x - x0.float()
-        Ib = 1 - Ia
-        Ic = y - y0.float()
-        Id = 1 - Ic
-
-        wa = Ib * Id
-        wb = Ia * Id
-        wc = Ib * Ic
-        wd = Ia * Ic
-
-        x0 = x0.view(N, 1, H, W).repeat(1, C, 1, 1)
-        x1 = x1.view(N, 1, H, W).repeat(1, C, 1, 1)
-        y0 = y0.view(N, 1, H, W).repeat(1, C, 1, 1)
-        y1 = y1.view(N, 1, H, W).repeat(1, C, 1, 1)
-
-        Ia = wa.view(N, 1, H, W).repeat(1, C, 1, 1) * x.data.gather(2, y0).gather(3, x0)
-        Ib = wb.view(N, 1, H, W).repeat(1, C, 1, 1) * x.data.gather(2, y0).gather(3, x1)
-        Ic = wc.view(N, 1, H, W).repeat(1, C, 1, 1) * x.data.gather(2, y1).gather(3, x0)
-        Id = wd.view(N, 1, H, W).repeat(1, C, 1, 1) * x.data.gather(2, y1).gather(3, x1)
-
-        out = Ia + Ib + Ic + Id
-        out = self.conv(out)
-
-        return out
-
-class DeformConvLSTMCell(nn.Module):
-    def __init__(self, input_dim, hidden_dim, kernel_size, bias):
-        super(DeformConvLSTMCell, self).__init__()
-        
+class DCNConvLSTMCell(nn.Module):
+    def __init__(self, input_dim, hidden_dim, kernel_size, bias, group=4, offset_scale=1.0):
+        super(DCNConvLSTMCell, self).__init__()
         self.hidden_dim = hidden_dim
-        padding = (kernel_size[0] // 2, kernel_size[1] // 2)
 
-        self.conv = DeformableConv2d(in_channels=input_dim + hidden_dim,
-                                     out_channels=4 * hidden_dim,
-                                     kernel_size=kernel_size,
-                                     padding=padding,
-                                     bias=bias)
+        self.dcn = DCNv3(
+            channels=input_dim + hidden_dim,
+            kernel_size=kernel_size,
+            group=group,
+            offset_scale=offset_scale
+        )
+
+        self.conv = nn.Conv2d(in_channels=hidden_dim,
+                              out_channels=4 * hidden_dim,
+                              kernel_size=1,
+                              padding=0,
+                              bias=bias)
 
     def forward(self, input_tensor, cur_state):
         h_cur, c_cur = cur_state
-        combined_conv = self.conv(torch.cat([input_tensor, h_cur], dim=1))
+        dcn_output = self.dcn(torch.cat([input_tensor, h_cur], dim=1))
+        combined_conv = self.conv(dcn_output)
         i, f, o, g = torch.sigmoid(combined_conv).chunk(4, dim=1)
         c_next = f * c_cur + i * torch.tanh(g)
         return o * torch.tanh(c_next), c_next
 
     def init_hidden(self, batch_size, image_size):
-        return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.conv.weight.device),
-                torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.conv.weight.device))
+        return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.weight.device),
+                torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.weight.device))
 
-# same as normal convlstm
-class DeformConvLSTM(ConvLSTM):
+class DCNConvLSTM(ConvLSTM):
     def __init__(self, *args, **kwargs):
-        super(DeformConvLSTM, self).__init__(*args, **kwargs)
+        super(DCNConvLSTM, self).__init__(*args, **kwargs)
 
-    def _init_cell(self, input_dim, hidden_dim, kernel_size, bias):
-        return DeformConvLSTMCell(input_dim, hidden_dim, kernel_size, bias)
+    def forward(self, input_tensor, hidden_state=None):
+        b, seq_len, _, h, w = input_tensor.size()
 
-class ConvLSTM_FC_Deform(ConvLSTM_FC):
+        if hidden_state is None:
+            hidden_state = [cell.init_hidden(b, (h, w)) for cell in self.cell_list]
+
+        layer_output_list, last_state_list = [], []
+        for layer_idx, cell in enumerate(self.cell_list):
+            h, c = hidden_state[layer_idx]
+            output_inner = []
+            for t in range(seq_len):
+                h, c = cell(input_tensor[:, t, :, :, :], (h, c))
+                output_inner.append(h)
+            layer_output = torch.stack(output_inner, dim=1)
+            layer_output_list.append(layer_output.permute(0, 2, 1, 3, 4))
+            last_state_list.append((h, c))
+            input_tensor = layer_output
+
+        if not self.return_all_layers:
+            layer_output_list, last_state_list = layer_output_list[-1:], last_state_list[-1:]
+
+        return layer_output_list, last_state_list
+
+class DCNConvLSTM_FC(DCNConvLSTM):
     def __init__(self, *args, **kwargs):
-        super(ConvLSTM_FC_Deform, self).__init__(*args, **kwargs)
+        super(DCNConvLSTM_FC, self).__init__(*args, **kwargs)
+        self.attention = nn.Sequential(
+            nn.Conv2d(self.hidden_dim[-1], 1, kernel_size=1),  # 入力特徴量の次元を変更
+            nn.Sigmoid()
+        )
+        self.dropout1 = nn.Dropout(0.5)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc = nn.Sequential(
+            nn.Linear(self.hidden_dim[-1], 128),  # 入力特徴量の次元を変更
+            nn.ReLU(),
+            self.dropout1,
+            nn.Linear(128, 32),  # 追加の中間層
+            nn.ReLU(),
+            self.dropout2,
+            nn.Linear(32, 2),  # 出力を2次元に変更
+            nn.Softmax(dim=1)
+        )
 
-    def _init_cell(self, input_dim, hidden_dim, kernel_size, bias):
-        return DeformConvLSTMCell(input_dim, hidden_dim, kernel_size, bias)
-
+    def forward(self, input_tensor, hidden_state=None):
+        layer_output_list, last_state_list = super(DCNConvLSTM_FC, self).forward(input_tensor, hidden_state=hidden_state)
+        output = layer_output_list[-1][:, -1, :, :, :]  # 取得した最後の出力を使用
+        print(f"Output shape before GAP: {output.shape}")
+        attention_map = self.attention(output)
+        output = (output * attention_map).sum(dim=[2, 3])  # Global Average Pooling
+        print(f"Output shape after GAP: {output.shape}")
+        output = output.reshape(output.size(0), -1)  # 出力をフラットな形に変形
+        print(f"Output shape after reshape: {output.shape}")
+        output = self.fc(output)  # 変形後の出力を全結合層に入力
+        return output  # モデルの出力を返す

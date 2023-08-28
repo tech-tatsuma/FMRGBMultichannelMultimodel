@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC, ViViT, ConvLSTM_FC_Deform
+from model import ConvNet3D, ConvLSTM_FC, ViViT, ConvLSTMwithDCN_FC
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -146,7 +146,7 @@ def train(opt):
 
     elif learningmethod=='convlstmwithdcn':
         # create convlstm with DCN model
-        model = ConvLSTM_FC_Deform(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
+        model = ConvLSTMwithDCN_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
         criterion = nn.CrossEntropyLoss()
     else:
         # error
@@ -245,7 +245,7 @@ def train(opt):
 
         # Save the model if validation loss decreases
         if val_loss_min is None or val_loss < val_loss_min:
-            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}withoutsoftmax.pt'
+            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}intweak.pt'
             torch.save(model.state_dict(), model_save_name)
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
@@ -272,7 +272,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plot_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}withoutsoftmax.png'
+    plot_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}intweak.png'
     plt.savefig(plot_save_name)
 
     return train_loss, val_loss_min
@@ -306,7 +306,7 @@ if __name__=='__main__':
         sys.stdout.flush()
 
     elif opt.islearnrate_search == 'true':
-        learning_rates = [0.01, 0.001, 0.0001, 0.00001]
+        learning_rates = [0.001, 0.002, 0.003, 0.004]
         best_loss = float('inf')
         best_lr = 0
         for lr in learning_rates:

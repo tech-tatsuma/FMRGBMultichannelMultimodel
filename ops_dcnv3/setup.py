@@ -16,7 +16,7 @@ from torch.utils.cpp_extension import CUDAExtension
 from setuptools import find_packages
 from setuptools import setup
 
-requirements = ["torch", "torchvision"]
+# requirements = ["torch", "torchvision"]
 
 
 def get_extensions():
