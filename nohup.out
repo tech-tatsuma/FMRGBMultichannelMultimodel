@@ -1,0 +1,16 @@
+Namespace(data='violence_datasets', epochs=100, test_size=0.2, patience=100, learnmethod='vivit')
+-----biginning training-----
+Traceback (most recent call last):
+  File "/home/furuya/FMRGB/FMRGBMultichannelMultimodel/train.py", line 182, in <module>
+    train(opt)
+  File "/home/furuya/FMRGB/FMRGBMultichannelMultimodel/train.py", line 71, in train
+    model = ViViT(depth=64, num_classes=2).to(device)
+  File "/home/furuya/FMRGB/FMRGBMultichannelMultimodel/model.py", line 207, in __init__
+    self.space_transformer = nn.ModuleList([LCAttention(dim, dropout = dropout) for _ in range(depth)])
+  File "/home/furuya/FMRGB/FMRGBMultichannelMultimodel/model.py", line 207, in <listcomp>
+    self.space_transformer = nn.ModuleList([LCAttention(dim, dropout = dropout) for _ in range(depth)])
+NameError: name 'LCAttention' is not defined. Did you mean: 'Attention'?
+Namespace(data='violence_datasets', epochs=100, test_size=0.2, patience=100, learnmethod='convlstm')
+-----biginning training-----
+Let's use 2 GPUs!
+0it [00:00, ?it/s]1it [00:06,  6.65s/it]2it [00:10,  5.05s/it]3it [00:14,  4.43s/it]4it [00:18,  4.51s/it]5it [00:22,  4.18s/it]6it [00:26,  4.12s/it]
