@@ -1,380 +1,0 @@
-start time: 2023-07-21 10:39:34.436703
-Namespace(data='data3c', epochs=100, lr=0.001, test_size=0.3, patience=50, learnmethod='conv3d', islearnrate_search='true', usescheduler='false')
-
-Training with learning rate: 0.001
------beginning training-----
-Let's use 2 GPUs!
-  0%|          | 0/100 [00:00<?, ?it/s]Epoch 1, Validation loss: 0.6069, Validation accuracy: 0.6358
-  1%|          | 1/100 [02:40<4:24:41, 160.42s/it]Epoch 2, Validation loss: 0.6056, Validation accuracy: 0.6424
-  2%|▏         | 2/100 [05:20<4:21:45, 160.26s/it]Epoch 3, Validation loss: 0.6044, Validation accuracy: 0.6358
-  3%|▎         | 3/100 [07:58<4:17:11, 159.09s/it]Epoch 4, Validation loss: 0.5988, Validation accuracy: 0.6159
-  4%|▍         | 4/100 [10:37<4:14:48, 159.25s/it]Epoch 5, Validation loss: 0.5522, Validation accuracy: 0.7351
-  5%|▌         | 5/100 [13:17<4:12:10, 159.26s/it]Epoch 6, Validation loss: 0.5467, Validation accuracy: 0.6424
-  6%|▌         | 6/100 [15:57<4:10:02, 159.60s/it]Epoch 7, Validation loss: 0.4608, Validation accuracy: 0.7682
-  7%|▋         | 7/100 [18:36<4:07:17, 159.55s/it]Epoch 8, Validation loss: 0.5007, Validation accuracy: 0.7682
-  8%|▊         | 8/100 [21:14<4:03:47, 159.00s/it]Epoch 9, Validation loss: 0.6200, Validation accuracy: 0.7947
-  9%|▉         | 9/100 [23:53<4:01:17, 159.09s/it]Epoch 10, Validation loss: 0.5879, Validation accuracy: 0.7947
- 10%|█         | 10/100 [26:34<3:59:08, 159.43s/it]Epoch 11, Validation loss: 0.6247, Validation accuracy: 0.8013
- 11%|█         | 11/100 [29:11<3:55:26, 158.73s/it]Epoch 12, Validation loss: 0.6068, Validation accuracy: 0.7682
- 12%|█▏        | 12/100 [31:50<3:52:50, 158.76s/it]Epoch 13, Validation loss: 0.6429, Validation accuracy: 0.7748
- 13%|█▎        | 13/100 [34:27<3:49:41, 158.40s/it]Epoch 14, Validation loss: 1.0942, Validation accuracy: 0.7748
- 14%|█▍        | 14/100 [37:07<3:47:40, 158.84s/it]Epoch 15, Validation loss: 1.3717, Validation accuracy: 0.7748
- 15%|█▌        | 15/100 [39:45<3:44:36, 158.55s/it]Epoch 16, Validation loss: 1.1199, Validation accuracy: 0.7417
- 16%|█▌        | 16/100 [42:23<3:41:44, 158.39s/it]Epoch 17, Validation loss: 1.2285, Validation accuracy: 0.7748
- 17%|█▋        | 17/100 [45:03<3:39:52, 158.95s/it]Epoch 18, Validation loss: 0.8982, Validation accuracy: 0.7815
- 18%|█▊        | 18/100 [47:40<3:36:30, 158.42s/it]Epoch 19, Validation loss: 0.9032, Validation accuracy: 0.8079
- 19%|█▉        | 19/100 [50:20<3:34:21, 158.79s/it]Epoch 20, Validation loss: 1.4376, Validation accuracy: 0.7682
- 20%|██        | 20/100 [52:58<3:31:26, 158.58s/it]Epoch 21, Validation loss: 0.7059, Validation accuracy: 0.7947
- 21%|██        | 21/100 [55:37<3:28:51, 158.63s/it]Epoch 22, Validation loss: 1.0902, Validation accuracy: 0.7550
- 22%|██▏       | 22/100 [58:15<3:26:09, 158.58s/it]Epoch 23, Validation loss: 0.8833, Validation accuracy: 0.7483
- 23%|██▎       | 23/100 [1:00:54<3:23:36, 158.65s/it]Epoch 24, Validation loss: 1.1335, Validation accuracy: 0.8079
- 24%|██▍       | 24/100 [1:03:33<3:21:04, 158.74s/it]Epoch 25, Validation loss: 1.0819, Validation accuracy: 0.7815
- 25%|██▌       | 25/100 [1:06:12<3:18:35, 158.87s/it]Epoch 26, Validation loss: 0.8985, Validation accuracy: 0.7616
- 26%|██▌       | 26/100 [1:08:51<3:16:03, 158.96s/it]Epoch 27, Validation loss: 0.9679, Validation accuracy: 0.7616
- 27%|██▋       | 27/100 [1:11:29<3:12:52, 158.53s/it]Epoch 28, Validation loss: 1.1331, Validation accuracy: 0.7550
- 28%|██▊       | 28/100 [1:14:09<3:10:52, 159.07s/it]Epoch 29, Validation loss: 1.0542, Validation accuracy: 0.7550
- 29%|██▉       | 29/100 [1:16:49<3:08:37, 159.40s/it]Epoch 30, Validation loss: 1.0216, Validation accuracy: 0.7815
- 30%|███       | 30/100 [1:19:27<3:05:20, 158.87s/it]Epoch 31, Validation loss: 1.0217, Validation accuracy: 0.7947
- 31%|███       | 31/100 [1:22:06<3:02:38, 158.82s/it]Epoch 32, Validation loss: 1.0611, Validation accuracy: 0.8079
- 32%|███▏      | 32/100 [1:24:46<3:00:23, 159.17s/it]Epoch 33, Validation loss: 1.1423, Validation accuracy: 0.8212
- 33%|███▎      | 33/100 [1:27:22<2:56:56, 158.46s/it]Epoch 34, Validation loss: 1.2851, Validation accuracy: 0.7483
- 34%|███▍      | 34/100 [1:30:01<2:54:20, 158.49s/it]Epoch 35, Validation loss: 1.0009, Validation accuracy: 0.8079
- 35%|███▌      | 35/100 [1:32:38<2:51:20, 158.16s/it]Epoch 36, Validation loss: 1.0601, Validation accuracy: 0.8079
- 36%|███▌      | 36/100 [1:35:18<2:49:14, 158.66s/it]Epoch 37, Validation loss: 1.2014, Validation accuracy: 0.7815
- 37%|███▋      | 37/100 [1:37:56<2:46:17, 158.37s/it]Epoch 38, Validation loss: 1.2575, Validation accuracy: 0.7483
- 38%|███▊      | 38/100 [1:40:34<2:43:39, 158.38s/it]Epoch 39, Validation loss: 0.9901, Validation accuracy: 0.8013
- 39%|███▉      | 39/100 [1:43:12<2:40:49, 158.18s/it]Epoch 40, Validation loss: 1.1577, Validation accuracy: 0.8013
- 40%|████      | 40/100 [1:45:50<2:38:07, 158.12s/it]Epoch 41, Validation loss: 1.4444, Validation accuracy: 0.7748
- 41%|████      | 41/100 [1:48:26<2:34:59, 157.62s/it]Epoch 42, Validation loss: 1.2406, Validation accuracy: 0.7550
- 42%|████▏     | 42/100 [1:51:05<2:32:29, 157.75s/it]Epoch 43, Validation loss: 1.4449, Validation accuracy: 0.7550
- 43%|████▎     | 43/100 [1:53:41<2:29:24, 157.26s/it]Epoch 44, Validation loss: 1.3855, Validation accuracy: 0.7550
- 44%|████▍     | 44/100 [1:56:20<2:27:15, 157.77s/it]Epoch 45, Validation loss: 1.6094, Validation accuracy: 0.7550
- 45%|████▌     | 45/100 [1:58:58<2:24:52, 158.04s/it]Epoch 46, Validation loss: 1.3776, Validation accuracy: 0.7815
- 46%|████▌     | 46/100 [2:01:35<2:21:47, 157.55s/it]Epoch 47, Validation loss: 1.4153, Validation accuracy: 0.8013
- 47%|████▋     | 47/100 [2:04:12<2:19:09, 157.55s/it]Epoch 48, Validation loss: 1.4543, Validation accuracy: 0.7947
- 48%|████▊     | 48/100 [2:06:49<2:16:23, 157.38s/it]Epoch 49, Validation loss: 1.4855, Validation accuracy: 0.7947
- 49%|████▉     | 49/100 [2:09:25<2:13:26, 156.99s/it]Epoch 50, Validation loss: 1.5122, Validation accuracy: 0.7947
- 50%|█████     | 50/100 [2:12:02<2:10:51, 157.03s/it]Epoch 51, Validation loss: 1.5432, Validation accuracy: 0.7947
- 51%|█████     | 51/100 [2:14:40<2:08:18, 157.12s/it]Epoch 52, Validation loss: 1.6002, Validation accuracy: 0.7815
- 52%|█████▏    | 52/100 [2:17:20<2:06:20, 157.93s/it]Epoch 53, Validation loss: 1.5529, Validation accuracy: 0.7815
- 53%|█████▎    | 53/100 [2:19:58<2:03:42, 157.93s/it]Epoch 54, Validation loss: 1.5828, Validation accuracy: 0.7682
- 54%|█████▍    | 54/100 [2:22:35<2:01:01, 157.87s/it]Epoch 55, Validation loss: 1.3463, Validation accuracy: 0.7815
- 55%|█████▌    | 55/100 [2:25:13<1:58:17, 157.72s/it]Epoch 56, Validation loss: 2.4050, Validation accuracy: 0.7682
- 56%|█████▌    | 56/100 [2:27:48<1:55:15, 157.16s/it]Epoch 57, Validation loss: 2.0307, Validation accuracy: 0.7616
- 56%|█████▌    | 56/100 [2:30:28<1:58:14, 161.23s/it]
-Early stopping due to validation loss not improving for 50 epochs
-
-Training with learning rate: 0.0007
------beginning training-----
-Let's use 2 GPUs!
-  0%|          | 0/100 [00:00<?, ?it/s]Epoch 1, Validation loss: 0.6574, Validation accuracy: 0.5099
-  1%|          | 1/100 [02:40<4:24:00, 160.00s/it]Epoch 2, Validation loss: 0.5990, Validation accuracy: 0.6093
-  2%|▏         | 2/100 [05:18<4:19:51, 159.10s/it]Epoch 3, Validation loss: 0.5930, Validation accuracy: 0.6093
-  3%|▎         | 3/100 [07:56<4:16:44, 158.81s/it]Epoch 4, Validation loss: 0.5807, Validation accuracy: 0.6093
-  4%|▍         | 4/100 [10:34<4:13:15, 158.28s/it]Epoch 5, Validation loss: 0.5455, Validation accuracy: 0.7020
-  5%|▌         | 5/100 [13:13<4:10:58, 158.51s/it]Epoch 6, Validation loss: 0.5603, Validation accuracy: 0.6291
-  6%|▌         | 6/100 [15:48<4:06:19, 157.23s/it]Epoch 7, Validation loss: 0.5328, Validation accuracy: 0.7152
-  7%|▋         | 7/100 [18:22<4:02:09, 156.23s/it]Epoch 8, Validation loss: 0.6291, Validation accuracy: 0.6755
-  8%|▊         | 8/100 [20:59<3:59:53, 156.45s/it]Epoch 9, Validation loss: 0.5636, Validation accuracy: 0.7417
-  9%|▉         | 9/100 [23:35<3:57:18, 156.47s/it]Epoch 10, Validation loss: 0.5475, Validation accuracy: 0.7947
- 10%|█         | 10/100 [26:09<3:53:22, 155.59s/it]Epoch 11, Validation loss: 0.5621, Validation accuracy: 0.7815
- 11%|█         | 11/100 [28:47<3:51:49, 156.29s/it]Epoch 12, Validation loss: 0.6084, Validation accuracy: 0.7815
- 12%|█▏        | 12/100 [31:25<3:50:05, 156.88s/it]Epoch 13, Validation loss: 0.6385, Validation accuracy: 0.8079
- 13%|█▎        | 13/100 [34:04<3:48:26, 157.55s/it]Epoch 14, Validation loss: 0.6281, Validation accuracy: 0.8146
- 14%|█▍        | 14/100 [36:41<3:45:37, 157.41s/it]Epoch 15, Validation loss: 0.9324, Validation accuracy: 0.7550
- 15%|█▌        | 15/100 [39:21<3:43:52, 158.02s/it]Epoch 16, Validation loss: 0.9531, Validation accuracy: 0.7815
- 16%|█▌        | 16/100 [42:00<3:42:02, 158.60s/it]Epoch 17, Validation loss: 0.7159, Validation accuracy: 0.8146
- 17%|█▋        | 17/100 [44:40<3:39:58, 159.02s/it]Epoch 18, Validation loss: 0.7277, Validation accuracy: 0.8013
- 18%|█▊        | 18/100 [47:17<3:36:18, 158.27s/it]Epoch 19, Validation loss: 0.5857, Validation accuracy: 0.8079
- 19%|█▉        | 19/100 [49:55<3:33:36, 158.23s/it]Epoch 20, Validation loss: 0.6875, Validation accuracy: 0.8146
- 20%|██        | 20/100 [52:34<3:31:18, 158.48s/it]Epoch 21, Validation loss: 0.6522, Validation accuracy: 0.8079
- 21%|██        | 21/100 [55:11<3:28:11, 158.12s/it]Epoch 22, Validation loss: 0.7076, Validation accuracy: 0.8411
- 22%|██▏       | 22/100 [57:51<3:26:08, 158.57s/it]Epoch 23, Validation loss: 0.7746, Validation accuracy: 0.7947
- 23%|██▎       | 23/100 [1:00:28<3:22:41, 157.95s/it]Epoch 24, Validation loss: 0.9071, Validation accuracy: 0.7947
- 24%|██▍       | 24/100 [1:03:04<3:19:36, 157.58s/it]Epoch 25, Validation loss: 0.7204, Validation accuracy: 0.8146
- 25%|██▌       | 25/100 [1:05:42<3:16:51, 157.49s/it]Epoch 26, Validation loss: 0.7192, Validation accuracy: 0.8278
- 26%|██▌       | 26/100 [1:08:18<3:13:45, 157.10s/it]Epoch 27, Validation loss: 0.8193, Validation accuracy: 0.8411
- 27%|██▋       | 27/100 [1:10:54<3:10:53, 156.90s/it]Epoch 28, Validation loss: 1.0308, Validation accuracy: 0.7550
- 28%|██▊       | 28/100 [1:13:32<3:08:47, 157.32s/it]Epoch 29, Validation loss: 0.7969, Validation accuracy: 0.8411
- 29%|██▉       | 29/100 [1:16:08<3:05:22, 156.66s/it]Epoch 30, Validation loss: 0.8015, Validation accuracy: 0.7947
- 30%|███       | 30/100 [1:18:45<3:03:06, 156.95s/it]Epoch 31, Validation loss: 0.9328, Validation accuracy: 0.7947
- 31%|███       | 31/100 [1:21:23<3:00:36, 157.06s/it]Epoch 32, Validation loss: 0.9505, Validation accuracy: 0.8146
- 32%|███▏      | 32/100 [1:24:00<2:58:03, 157.11s/it]Epoch 33, Validation loss: 1.1822, Validation accuracy: 0.7947
- 33%|███▎      | 33/100 [1:26:36<2:54:58, 156.70s/it]Epoch 34, Validation loss: 1.1194, Validation accuracy: 0.7285
- 34%|███▍      | 34/100 [1:29:12<2:52:26, 156.77s/it]Epoch 35, Validation loss: 1.0139, Validation accuracy: 0.7682
- 35%|███▌      | 35/100 [1:31:50<2:50:02, 156.96s/it]Epoch 36, Validation loss: 0.9073, Validation accuracy: 0.8079
- 36%|███▌      | 36/100 [1:34:25<2:46:54, 156.48s/it]Epoch 37, Validation loss: 0.8241, Validation accuracy: 0.8278
- 37%|███▋      | 37/100 [1:37:02<2:44:28, 156.64s/it]Epoch 38, Validation loss: 1.1375, Validation accuracy: 0.7881
- 38%|███▊      | 38/100 [1:39:40<2:42:03, 156.83s/it]Epoch 39, Validation loss: 0.9339, Validation accuracy: 0.8212
- 39%|███▉      | 39/100 [1:42:19<2:40:14, 157.62s/it]Epoch 40, Validation loss: 0.9880, Validation accuracy: 0.8079
- 40%|████      | 40/100 [1:44:57<2:37:43, 157.72s/it]Epoch 41, Validation loss: 1.0628, Validation accuracy: 0.7881
- 41%|████      | 41/100 [1:47:33<2:34:44, 157.36s/it]Epoch 42, Validation loss: 0.9865, Validation accuracy: 0.8013
- 42%|████▏     | 42/100 [1:50:10<2:31:45, 156.98s/it]Epoch 43, Validation loss: 0.9185, Validation accuracy: 0.8344
- 43%|████▎     | 43/100 [1:52:47<2:29:19, 157.18s/it]Epoch 44, Validation loss: 0.8396, Validation accuracy: 0.8146
- 44%|████▍     | 44/100 [1:55:23<2:26:14, 156.69s/it]Epoch 45, Validation loss: 0.8801, Validation accuracy: 0.7748
- 45%|████▌     | 45/100 [1:57:59<2:23:30, 156.56s/it]Epoch 46, Validation loss: 0.7083, Validation accuracy: 0.8212
- 46%|████▌     | 46/100 [2:00:35<2:20:49, 156.47s/it]Epoch 47, Validation loss: 0.9710, Validation accuracy: 0.8212
- 47%|████▋     | 47/100 [2:03:11<2:18:06, 156.34s/it]Epoch 48, Validation loss: 1.0422, Validation accuracy: 0.7748
- 48%|████▊     | 48/100 [2:05:47<2:15:21, 156.18s/it]Epoch 49, Validation loss: 0.8259, Validation accuracy: 0.8146
- 49%|████▉     | 49/100 [2:08:26<2:13:19, 156.86s/it]Epoch 50, Validation loss: 1.7583, Validation accuracy: 0.7219
- 50%|█████     | 50/100 [2:11:01<2:10:28, 156.57s/it]Epoch 51, Validation loss: 0.9266, Validation accuracy: 0.8146
- 51%|█████     | 51/100 [2:13:38<2:07:58, 156.70s/it]Epoch 52, Validation loss: 1.4076, Validation accuracy: 0.7550
- 52%|█████▏    | 52/100 [2:16:13<2:04:56, 156.17s/it]Epoch 53, Validation loss: 0.9133, Validation accuracy: 0.7550
- 53%|█████▎    | 53/100 [2:18:49<2:02:07, 155.91s/it]Epoch 54, Validation loss: 1.0568, Validation accuracy: 0.8079
- 54%|█████▍    | 54/100 [2:21:23<1:59:09, 155.42s/it]Epoch 55, Validation loss: 1.3058, Validation accuracy: 0.8013
- 55%|█████▌    | 55/100 [2:23:59<1:56:39, 155.54s/it]Epoch 56, Validation loss: 1.1787, Validation accuracy: 0.8146
- 56%|█████▌    | 56/100 [2:26:34<1:53:54, 155.32s/it]Epoch 57, Validation loss: 1.0055, Validation accuracy: 0.8079
- 56%|█████▌    | 56/100 [2:29:09<1:57:12, 159.82s/it]
-Early stopping due to validation loss not improving for 50 epochs
-
-Training with learning rate: 0.0005
------beginning training-----
-Let's use 2 GPUs!
-  0%|          | 0/100 [00:00<?, ?it/s]Epoch 1, Validation loss: 0.7195, Validation accuracy: 0.6093
-  1%|          | 1/100 [02:40<4:24:24, 160.25s/it]Epoch 2, Validation loss: 0.6066, Validation accuracy: 0.6159
-  2%|▏         | 2/100 [05:27<4:28:29, 164.38s/it]Epoch 3, Validation loss: 0.5705, Validation accuracy: 0.6159
-  3%|▎         | 3/100 [08:06<4:21:42, 161.88s/it]Epoch 4, Validation loss: 0.5651, Validation accuracy: 0.6490
-  4%|▍         | 4/100 [10:44<4:16:28, 160.30s/it]Epoch 5, Validation loss: 0.4981, Validation accuracy: 0.7219
-  5%|▌         | 5/100 [13:23<4:13:20, 160.00s/it]Epoch 6, Validation loss: 0.4857, Validation accuracy: 0.7616
-  6%|▌         | 6/100 [16:01<4:09:32, 159.29s/it]Epoch 7, Validation loss: 0.5501, Validation accuracy: 0.7550
-  7%|▋         | 7/100 [18:40<4:06:39, 159.14s/it]Epoch 8, Validation loss: 0.3910, Validation accuracy: 0.8477
-  8%|▊         | 8/100 [21:18<4:03:23, 158.74s/it]Epoch 9, Validation loss: 0.7008, Validation accuracy: 0.7285
-  9%|▉         | 9/100 [23:56<4:00:33, 158.61s/it]Epoch 10, Validation loss: 0.3933, Validation accuracy: 0.8609
- 10%|█         | 10/100 [26:35<3:58:11, 158.79s/it]Epoch 11, Validation loss: 0.4693, Validation accuracy: 0.8477
- 11%|█         | 11/100 [29:24<3:59:46, 161.65s/it]Epoch 12, Validation loss: 0.3823, Validation accuracy: 0.8543
- 12%|█▏        | 12/100 [32:09<3:58:40, 162.74s/it]Epoch 13, Validation loss: 0.6564, Validation accuracy: 0.7947
- 13%|█▎        | 13/100 [34:49<3:55:04, 162.12s/it]Epoch 14, Validation loss: 0.6893, Validation accuracy: 0.7947
- 14%|█▍        | 14/100 [37:27<3:50:35, 160.88s/it]Epoch 15, Validation loss: 0.5587, Validation accuracy: 0.8278
- 15%|█▌        | 15/100 [40:05<3:46:22, 159.79s/it]Epoch 16, Validation loss: 0.5523, Validation accuracy: 0.8079
- 16%|█▌        | 16/100 [42:43<3:43:07, 159.37s/it]Epoch 17, Validation loss: 0.4662, Validation accuracy: 0.8609
- 17%|█▋        | 17/100 [45:20<3:39:25, 158.62s/it]Epoch 18, Validation loss: 0.9007, Validation accuracy: 0.8079
- 18%|█▊        | 18/100 [48:00<3:37:10, 158.91s/it]Epoch 19, Validation loss: 0.8995, Validation accuracy: 0.8146
- 19%|█▉        | 19/100 [50:37<3:33:54, 158.45s/it]Epoch 20, Validation loss: 0.6166, Validation accuracy: 0.8146
- 20%|██        | 20/100 [53:16<3:31:33, 158.67s/it]Epoch 21, Validation loss: 0.8078, Validation accuracy: 0.8146
- 21%|██        | 21/100 [55:53<3:28:15, 158.17s/it]Epoch 22, Validation loss: 0.5166, Validation accuracy: 0.8543
- 22%|██▏       | 22/100 [58:32<3:25:45, 158.28s/it]Epoch 23, Validation loss: 0.6201, Validation accuracy: 0.8675
- 23%|██▎       | 23/100 [1:01:10<3:23:04, 158.24s/it]Epoch 24, Validation loss: 0.5374, Validation accuracy: 0.9073
- 24%|██▍       | 24/100 [1:03:50<3:21:00, 158.69s/it]Epoch 25, Validation loss: 0.7245, Validation accuracy: 0.8344
- 25%|██▌       | 25/100 [1:06:28<3:18:07, 158.50s/it]Epoch 26, Validation loss: 0.8936, Validation accuracy: 0.7947
- 26%|██▌       | 26/100 [1:09:09<3:16:35, 159.40s/it]Epoch 27, Validation loss: 1.1355, Validation accuracy: 0.7815
- 27%|██▋       | 27/100 [1:11:56<3:16:29, 161.50s/it]Epoch 28, Validation loss: 0.8327, Validation accuracy: 0.8146
- 28%|██▊       | 28/100 [1:14:34<3:12:46, 160.65s/it]Epoch 29, Validation loss: 0.8828, Validation accuracy: 0.8146
- 29%|██▉       | 29/100 [1:17:14<3:09:43, 160.33s/it]Epoch 30, Validation loss: 0.8320, Validation accuracy: 0.8543
- 30%|███       | 30/100 [1:19:52<3:06:10, 159.58s/it]Epoch 31, Validation loss: 0.9021, Validation accuracy: 0.8344
- 31%|███       | 31/100 [1:22:36<3:05:12, 161.05s/it]Epoch 32, Validation loss: 0.9546, Validation accuracy: 0.8146
- 32%|███▏      | 32/100 [1:25:18<3:02:47, 161.29s/it]Epoch 33, Validation loss: 1.6095, Validation accuracy: 0.7616
- 33%|███▎      | 33/100 [1:27:58<2:59:34, 160.82s/it]Epoch 34, Validation loss: 0.5649, Validation accuracy: 0.8411
- 34%|███▍      | 34/100 [1:30:32<2:54:55, 159.02s/it]Epoch 35, Validation loss: 0.4755, Validation accuracy: 0.8212
- 35%|███▌      | 35/100 [1:33:09<2:51:21, 158.17s/it]Epoch 36, Validation loss: 0.6462, Validation accuracy: 0.8079
- 36%|███▌      | 36/100 [1:35:45<2:48:04, 157.57s/it]Epoch 37, Validation loss: 0.5765, Validation accuracy: 0.8411
- 37%|███▋      | 37/100 [1:38:22<2:45:23, 157.52s/it]Epoch 38, Validation loss: 0.7079, Validation accuracy: 0.8278
- 38%|███▊      | 38/100 [1:40:55<2:41:09, 155.96s/it]Epoch 39, Validation loss: 0.6401, Validation accuracy: 0.8808
- 39%|███▉      | 39/100 [1:43:30<2:38:25, 155.83s/it]Epoch 40, Validation loss: 1.0098, Validation accuracy: 0.8013
- 40%|████      | 40/100 [1:46:05<2:35:37, 155.63s/it]Epoch 41, Validation loss: 0.6024, Validation accuracy: 0.8609
- 41%|████      | 41/100 [1:48:45<2:34:14, 156.86s/it]Epoch 42, Validation loss: 0.7969, Validation accuracy: 0.8146
- 42%|████▏     | 42/100 [1:51:24<2:32:13, 157.48s/it]Epoch 43, Validation loss: 0.6785, Validation accuracy: 0.8344
- 43%|████▎     | 43/100 [1:53:59<2:28:55, 156.77s/it]Epoch 44, Validation loss: 0.6216, Validation accuracy: 0.8742
- 44%|████▍     | 44/100 [1:56:33<2:25:27, 155.85s/it]Epoch 45, Validation loss: 0.6743, Validation accuracy: 0.8609
- 45%|████▌     | 45/100 [1:59:12<2:23:43, 156.79s/it]Epoch 46, Validation loss: 0.8922, Validation accuracy: 0.8278
- 46%|████▌     | 46/100 [2:01:54<2:22:40, 158.52s/it]Epoch 47, Validation loss: 1.3049, Validation accuracy: 0.7815
- 47%|████▋     | 47/100 [2:04:30<2:19:18, 157.71s/it]Epoch 48, Validation loss: 0.7072, Validation accuracy: 0.8543
- 48%|████▊     | 48/100 [2:07:06<2:16:15, 157.23s/it]Epoch 49, Validation loss: 0.8988, Validation accuracy: 0.8079
- 49%|████▉     | 49/100 [2:09:49<2:15:02, 158.87s/it]Epoch 50, Validation loss: 0.8639, Validation accuracy: 0.8411
- 50%|█████     | 50/100 [2:12:30<2:13:01, 159.62s/it]Epoch 51, Validation loss: 1.2864, Validation accuracy: 0.7748
- 51%|█████     | 51/100 [2:15:09<2:10:15, 159.50s/it]Epoch 52, Validation loss: 1.0047, Validation accuracy: 0.8344
- 52%|█████▏    | 52/100 [2:17:53<2:08:36, 160.75s/it]Epoch 53, Validation loss: 1.0220, Validation accuracy: 0.8079
- 53%|█████▎    | 53/100 [2:20:33<2:05:49, 160.62s/it]Epoch 54, Validation loss: 0.8149, Validation accuracy: 0.8212
- 54%|█████▍    | 54/100 [2:23:18<2:04:05, 161.85s/it]Epoch 55, Validation loss: 1.0485, Validation accuracy: 0.7815
- 55%|█████▌    | 55/100 [2:25:57<2:00:48, 161.09s/it]Epoch 56, Validation loss: 0.7691, Validation accuracy: 0.8344
- 56%|█████▌    | 56/100 [2:28:41<1:58:34, 161.68s/it]Epoch 57, Validation loss: 0.8799, Validation accuracy: 0.8344
- 57%|█████▋    | 57/100 [2:31:17<1:54:42, 160.05s/it]Epoch 58, Validation loss: 0.8654, Validation accuracy: 0.8278
- 58%|█████▊    | 58/100 [2:33:59<1:52:26, 160.64s/it]Epoch 59, Validation loss: 0.8475, Validation accuracy: 0.8411
- 59%|█████▉    | 59/100 [2:36:43<1:50:28, 161.67s/it]Epoch 60, Validation loss: 0.8282, Validation accuracy: 0.8278
- 60%|██████    | 60/100 [2:39:30<1:48:57, 163.44s/it]Epoch 61, Validation loss: 0.8564, Validation accuracy: 0.8411
- 61%|██████    | 61/100 [2:42:20<1:47:22, 165.19s/it]Epoch 62, Validation loss: 0.9626, Validation accuracy: 0.8344
- 61%|██████    | 61/100 [2:45:07<1:45:34, 162.43s/it]
-Early stopping due to validation loss not improving for 50 epochs
-
-Training with learning rate: 0.0003
------beginning training-----
-Let's use 2 GPUs!
-  0%|          | 0/100 [00:00<?, ?it/s]Epoch 1, Validation loss: 0.6217, Validation accuracy: 0.5563
-  1%|          | 1/100 [02:47<4:37:03, 167.91s/it]Epoch 2, Validation loss: 0.5641, Validation accuracy: 0.6424
-  2%|▏         | 2/100 [05:23<4:22:31, 160.72s/it]Epoch 3, Validation loss: 0.5417, Validation accuracy: 0.6821
-  3%|▎         | 3/100 [07:59<4:16:28, 158.65s/it]Epoch 4, Validation loss: 0.4746, Validation accuracy: 0.7483
-  4%|▍         | 4/100 [10:35<4:11:58, 157.49s/it]Epoch 5, Validation loss: 0.4222, Validation accuracy: 0.8079
-  5%|▌         | 5/100 [13:19<4:13:08, 159.87s/it]Epoch 6, Validation loss: 0.4114, Validation accuracy: 0.7947
-  6%|▌         | 6/100 [16:08<4:15:12, 162.90s/it]Epoch 7, Validation loss: 0.3497, Validation accuracy: 0.8543
-  7%|▋         | 7/100 [18:58<4:16:00, 165.16s/it]Epoch 8, Validation loss: 0.3658, Validation accuracy: 0.8477
-  8%|▊         | 8/100 [21:34<4:08:41, 162.19s/it]Epoch 9, Validation loss: 0.4201, Validation accuracy: 0.8411
-  9%|▉         | 9/100 [24:07<4:01:58, 159.54s/it]Epoch 10, Validation loss: 0.3726, Validation accuracy: 0.8477
- 10%|█         | 10/100 [26:43<3:57:30, 158.34s/it]Epoch 11, Validation loss: 0.3952, Validation accuracy: 0.8344
- 11%|█         | 11/100 [29:15<3:52:05, 156.46s/it]Epoch 12, Validation loss: 0.3619, Validation accuracy: 0.8609
- 12%|█▏        | 12/100 [31:49<3:48:31, 155.82s/it]Epoch 13, Validation loss: 0.3981, Validation accuracy: 0.8609
- 13%|█▎        | 13/100 [34:24<3:45:19, 155.40s/it]Epoch 14, Validation loss: 0.4590, Validation accuracy: 0.8609
- 14%|█▍        | 14/100 [37:01<3:43:16, 155.78s/it]Epoch 15, Validation loss: 0.3972, Validation accuracy: 0.8411
- 15%|█▌        | 15/100 [39:46<3:44:57, 158.80s/it]Epoch 16, Validation loss: 0.4632, Validation accuracy: 0.8543
- 16%|█▌        | 16/100 [42:30<3:44:33, 160.40s/it]Epoch 17, Validation loss: 0.5185, Validation accuracy: 0.8543
- 17%|█▋        | 17/100 [45:16<3:43:58, 161.91s/it]Epoch 18, Validation loss: 0.4647, Validation accuracy: 0.8477
- 18%|█▊        | 18/100 [48:00<3:42:22, 162.72s/it]Epoch 19, Validation loss: 0.4565, Validation accuracy: 0.8609
- 19%|█▉        | 19/100 [50:45<3:40:34, 163.39s/it]Epoch 20, Validation loss: 0.4626, Validation accuracy: 0.8675
- 20%|██        | 20/100 [53:30<3:38:16, 163.70s/it]Epoch 21, Validation loss: 0.4675, Validation accuracy: 0.8609
- 21%|██        | 21/100 [56:15<3:35:58, 164.03s/it]Epoch 22, Validation loss: 0.5325, Validation accuracy: 0.8609
- 22%|██▏       | 22/100 [58:58<3:32:55, 163.79s/it]Epoch 23, Validation loss: 0.4996, Validation accuracy: 0.8609
- 23%|██▎       | 23/100 [1:01:43<3:30:40, 164.16s/it]Epoch 24, Validation loss: 0.4799, Validation accuracy: 0.8609
- 24%|██▍       | 24/100 [1:04:26<3:27:35, 163.89s/it]Epoch 25, Validation loss: 0.5208, Validation accuracy: 0.8940
- 25%|██▌       | 25/100 [1:07:11<3:25:05, 164.08s/it]Epoch 26, Validation loss: 0.5517, Validation accuracy: 0.8146
- 26%|██▌       | 26/100 [1:09:55<3:22:30, 164.20s/it]Epoch 27, Validation loss: 0.4169, Validation accuracy: 0.8808
- 27%|██▋       | 27/100 [1:12:39<3:19:36, 164.06s/it]Epoch 28, Validation loss: 0.3781, Validation accuracy: 0.8675
- 28%|██▊       | 28/100 [1:15:22<3:16:29, 163.75s/it]Epoch 29, Validation loss: 0.4212, Validation accuracy: 0.8874
- 29%|██▉       | 29/100 [1:18:06<3:14:01, 163.96s/it]Epoch 30, Validation loss: 0.3414, Validation accuracy: 0.8543
- 30%|███       | 30/100 [1:20:53<3:12:21, 164.88s/it]Epoch 31, Validation loss: 0.4649, Validation accuracy: 0.8609
- 31%|███       | 31/100 [1:23:38<3:09:34, 164.85s/it]Epoch 32, Validation loss: 0.5512, Validation accuracy: 0.8609
- 32%|███▏      | 32/100 [1:26:22<3:06:31, 164.58s/it]Epoch 33, Validation loss: 0.5387, Validation accuracy: 0.8477
- 33%|███▎      | 33/100 [1:29:05<3:03:05, 163.96s/it]Epoch 34, Validation loss: 0.5924, Validation accuracy: 0.8609
- 34%|███▍      | 34/100 [1:31:50<3:00:53, 164.45s/it]Epoch 35, Validation loss: 0.5825, Validation accuracy: 0.8477
- 35%|███▌      | 35/100 [1:34:35<2:58:06, 164.41s/it]Epoch 36, Validation loss: 0.5689, Validation accuracy: 0.8675
- 36%|███▌      | 36/100 [1:37:17<2:54:47, 163.87s/it]Epoch 37, Validation loss: 0.5594, Validation accuracy: 0.8609
- 37%|███▋      | 37/100 [1:40:01<2:52:00, 163.82s/it]Epoch 38, Validation loss: 0.5390, Validation accuracy: 0.8543
- 38%|███▊      | 38/100 [1:42:44<2:48:55, 163.47s/it]Epoch 39, Validation loss: 0.5062, Validation accuracy: 0.8742
- 39%|███▉      | 39/100 [1:45:27<2:46:20, 163.61s/it]Epoch 40, Validation loss: 0.6376, Validation accuracy: 0.8609
- 40%|████      | 40/100 [1:48:10<2:43:23, 163.38s/it]Epoch 41, Validation loss: 0.5169, Validation accuracy: 0.8742
- 41%|████      | 41/100 [1:50:55<2:40:59, 163.72s/it]Epoch 42, Validation loss: 0.5483, Validation accuracy: 0.8808
- 42%|████▏     | 42/100 [1:53:36<2:37:40, 163.11s/it]Epoch 43, Validation loss: 0.5565, Validation accuracy: 0.8808
- 43%|████▎     | 43/100 [1:56:20<2:35:10, 163.34s/it]Epoch 44, Validation loss: 0.5520, Validation accuracy: 0.8742
- 44%|████▍     | 44/100 [1:59:03<2:32:17, 163.17s/it]Epoch 45, Validation loss: 0.5508, Validation accuracy: 0.8675
- 45%|████▌     | 45/100 [2:01:47<2:29:51, 163.48s/it]Epoch 46, Validation loss: 0.5558, Validation accuracy: 0.8675
- 46%|████▌     | 46/100 [2:04:30<2:26:52, 163.20s/it]Epoch 47, Validation loss: 0.7469, Validation accuracy: 0.8543
- 47%|████▋     | 47/100 [2:07:12<2:23:59, 163.00s/it]Epoch 48, Validation loss: 0.6403, Validation accuracy: 0.8742
- 48%|████▊     | 48/100 [2:09:57<2:21:32, 163.32s/it]Epoch 49, Validation loss: 0.6375, Validation accuracy: 0.8675
- 49%|████▉     | 49/100 [2:12:38<2:18:28, 162.90s/it]Epoch 50, Validation loss: 0.6682, Validation accuracy: 0.8609
- 50%|█████     | 50/100 [2:15:21<2:15:41, 162.84s/it]Epoch 51, Validation loss: 0.6188, Validation accuracy: 0.8675
- 51%|█████     | 51/100 [2:18:04<2:12:58, 162.84s/it]Epoch 52, Validation loss: 0.6165, Validation accuracy: 0.8742
- 52%|█████▏    | 52/100 [2:20:49<2:10:54, 163.64s/it]Epoch 53, Validation loss: 0.8216, Validation accuracy: 0.8609
- 53%|█████▎    | 53/100 [2:23:33<2:08:12, 163.67s/it]Epoch 54, Validation loss: 0.8623, Validation accuracy: 0.8543
- 54%|█████▍    | 54/100 [2:26:18<2:05:39, 163.91s/it]Epoch 55, Validation loss: 0.6530, Validation accuracy: 0.8543
- 55%|█████▌    | 55/100 [2:29:01<2:02:42, 163.62s/it]Epoch 56, Validation loss: 0.6916, Validation accuracy: 0.8411
- 56%|█████▌    | 56/100 [2:31:45<2:00:11, 163.90s/it]Epoch 57, Validation loss: 0.8690, Validation accuracy: 0.8609
- 57%|█████▋    | 57/100 [2:34:29<1:57:23, 163.81s/it]Epoch 58, Validation loss: 0.6766, Validation accuracy: 0.8477
- 58%|█████▊    | 58/100 [2:37:13<1:54:39, 163.79s/it]Epoch 59, Validation loss: 0.6732, Validation accuracy: 0.8477
- 59%|█████▉    | 59/100 [2:39:59<1:52:22, 164.46s/it]Epoch 60, Validation loss: 0.6505, Validation accuracy: 0.8808
- 60%|██████    | 60/100 [2:42:42<1:49:30, 164.26s/it]Epoch 61, Validation loss: 0.5444, Validation accuracy: 0.8808
- 61%|██████    | 61/100 [2:45:27<1:46:53, 164.45s/it]Epoch 62, Validation loss: 0.6186, Validation accuracy: 0.8675
- 62%|██████▏   | 62/100 [2:48:12<1:44:08, 164.45s/it]Epoch 63, Validation loss: 1.0908, Validation accuracy: 0.8212
- 63%|██████▎   | 63/100 [2:50:57<1:41:29, 164.58s/it]Epoch 64, Validation loss: 0.6065, Validation accuracy: 0.8543
- 64%|██████▍   | 64/100 [2:53:42<1:38:53, 164.82s/it]Epoch 65, Validation loss: 0.5945, Validation accuracy: 0.8609
- 65%|██████▌   | 65/100 [2:56:26<1:36:05, 164.73s/it]Epoch 66, Validation loss: 0.8471, Validation accuracy: 0.8411
- 66%|██████▌   | 66/100 [2:59:10<1:33:06, 164.32s/it]Epoch 67, Validation loss: 0.6154, Validation accuracy: 0.8609
- 67%|██████▋   | 67/100 [3:01:54<1:30:16, 164.15s/it]Epoch 68, Validation loss: 0.7817, Validation accuracy: 0.8477
- 68%|██████▊   | 68/100 [3:04:38<1:27:33, 164.18s/it]Epoch 69, Validation loss: 0.6883, Validation accuracy: 0.8543
- 69%|██████▉   | 69/100 [3:07:21<1:24:43, 164.00s/it]Epoch 70, Validation loss: 0.4433, Validation accuracy: 0.8609
- 70%|███████   | 70/100 [3:10:06<1:22:07, 164.25s/it]Epoch 71, Validation loss: 0.5464, Validation accuracy: 0.8742
- 71%|███████   | 71/100 [3:12:49<1:19:14, 163.95s/it]Epoch 72, Validation loss: 0.5844, Validation accuracy: 0.8675
- 72%|███████▏  | 72/100 [3:15:34<1:16:37, 164.20s/it]Epoch 73, Validation loss: 0.4596, Validation accuracy: 0.8543
- 73%|███████▎  | 73/100 [3:18:17<1:13:45, 163.90s/it]Epoch 74, Validation loss: 0.5649, Validation accuracy: 0.8742
- 74%|███████▍  | 74/100 [3:21:02<1:11:05, 164.06s/it]Epoch 75, Validation loss: 0.5683, Validation accuracy: 0.8344
- 75%|███████▌  | 75/100 [3:23:49<1:08:41, 164.88s/it]Epoch 76, Validation loss: 0.6591, Validation accuracy: 0.8609
- 76%|███████▌  | 76/100 [3:26:33<1:05:53, 164.71s/it]Epoch 77, Validation loss: 0.7062, Validation accuracy: 0.8609
- 77%|███████▋  | 77/100 [3:29:18<1:03:08, 164.73s/it]Epoch 78, Validation loss: 0.6263, Validation accuracy: 0.8477
- 78%|███████▊  | 78/100 [3:32:02<1:00:20, 164.58s/it]Epoch 79, Validation loss: 0.9883, Validation accuracy: 0.8344
- 79%|███████▉  | 79/100 [3:34:46<57:33, 164.45s/it]  Epoch 80, Validation loss: 0.5831, Validation accuracy: 0.8543
- 79%|███████▉  | 79/100 [3:37:29<57:48, 165.18s/it]
-Early stopping due to validation loss not improving for 50 epochs
-
-Training with learning rate: 0.0001
------beginning training-----
-Let's use 2 GPUs!
-  0%|          | 0/100 [00:00<?, ?it/s]Epoch 1, Validation loss: 0.6801, Validation accuracy: 0.4967
-  1%|          | 1/100 [02:44<4:32:07, 164.92s/it]Epoch 2, Validation loss: 0.6869, Validation accuracy: 0.6093
-  2%|▏         | 2/100 [05:27<4:26:59, 163.47s/it]Epoch 3, Validation loss: 0.6257, Validation accuracy: 0.6093
-  3%|▎         | 3/100 [08:11<4:24:46, 163.78s/it]Epoch 4, Validation loss: 0.6021, Validation accuracy: 0.6093
-  4%|▍         | 4/100 [10:56<4:22:39, 164.16s/it]Epoch 5, Validation loss: 0.5900, Validation accuracy: 0.6225
-  5%|▌         | 5/100 [13:40<4:20:11, 164.33s/it]Epoch 6, Validation loss: 0.5802, Validation accuracy: 0.6093
-  6%|▌         | 6/100 [16:25<4:17:46, 164.53s/it]Epoch 7, Validation loss: 0.6071, Validation accuracy: 0.6093
-  7%|▋         | 7/100 [19:08<4:13:51, 163.78s/it]Epoch 8, Validation loss: 0.6147, Validation accuracy: 0.6093
-  8%|▊         | 8/100 [21:52<4:11:35, 164.08s/it]Epoch 9, Validation loss: 0.6243, Validation accuracy: 0.6093
-  9%|▉         | 9/100 [24:35<4:08:17, 163.71s/it]Epoch 10, Validation loss: 0.5497, Validation accuracy: 0.6225
- 10%|█         | 10/100 [27:20<4:06:04, 164.05s/it]Epoch 11, Validation loss: 0.5248, Validation accuracy: 0.7815
- 11%|█         | 11/100 [30:04<4:03:06, 163.89s/it]Epoch 12, Validation loss: 0.5141, Validation accuracy: 0.7285
- 12%|█▏        | 12/100 [32:49<4:00:53, 164.25s/it]Epoch 13, Validation loss: 0.4955, Validation accuracy: 0.7881
- 13%|█▎        | 13/100 [35:33<3:58:15, 164.32s/it]Epoch 14, Validation loss: 0.5049, Validation accuracy: 0.6755
- 14%|█▍        | 14/100 [38:16<3:55:00, 163.96s/it]Epoch 15, Validation loss: 0.4650, Validation accuracy: 0.8146
- 15%|█▌        | 15/100 [41:02<3:52:59, 164.47s/it]Epoch 16, Validation loss: 0.4872, Validation accuracy: 0.7682
- 16%|█▌        | 16/100 [43:45<3:49:53, 164.20s/it]Epoch 17, Validation loss: 0.4330, Validation accuracy: 0.8079
- 17%|█▋        | 17/100 [46:30<3:47:14, 164.27s/it]Epoch 18, Validation loss: 0.4341, Validation accuracy: 0.7947
- 18%|█▊        | 18/100 [49:14<3:44:23, 164.18s/it]Epoch 19, Validation loss: 0.4284, Validation accuracy: 0.8146
- 19%|█▉        | 19/100 [51:57<3:41:10, 163.84s/it]Epoch 20, Validation loss: 0.4070, Validation accuracy: 0.8079
- 20%|██        | 20/100 [54:42<3:38:50, 164.13s/it]Epoch 21, Validation loss: 0.4457, Validation accuracy: 0.7815
- 21%|██        | 21/100 [57:27<3:36:26, 164.38s/it]Epoch 22, Validation loss: 0.3742, Validation accuracy: 0.8079
- 22%|██▏       | 22/100 [1:00:10<3:33:13, 164.02s/it]Epoch 23, Validation loss: 0.3706, Validation accuracy: 0.8146
- 23%|██▎       | 23/100 [1:02:56<3:31:22, 164.71s/it]Epoch 24, Validation loss: 0.5027, Validation accuracy: 0.7616
- 24%|██▍       | 24/100 [1:05:39<3:28:03, 164.26s/it]Epoch 25, Validation loss: 0.3523, Validation accuracy: 0.8079
- 25%|██▌       | 25/100 [1:08:22<3:24:50, 163.88s/it]Epoch 26, Validation loss: 0.3744, Validation accuracy: 0.7947
- 26%|██▌       | 26/100 [1:11:06<3:21:53, 163.69s/it]Epoch 27, Validation loss: 0.3904, Validation accuracy: 0.8278
- 27%|██▋       | 27/100 [1:13:49<3:18:57, 163.53s/it]Epoch 28, Validation loss: 0.3729, Validation accuracy: 0.8212
- 28%|██▊       | 28/100 [1:16:34<3:16:41, 163.91s/it]Epoch 29, Validation loss: 0.3916, Validation accuracy: 0.8212
- 29%|██▉       | 29/100 [1:19:16<3:13:30, 163.53s/it]Epoch 30, Validation loss: 0.5731, Validation accuracy: 0.7881
- 30%|███       | 30/100 [1:21:59<3:10:21, 163.16s/it]Epoch 31, Validation loss: 0.4175, Validation accuracy: 0.8278
- 31%|███       | 31/100 [1:24:41<3:07:22, 162.93s/it]Epoch 32, Validation loss: 0.3327, Validation accuracy: 0.8411
- 32%|███▏      | 32/100 [1:27:24<3:04:49, 163.08s/it]Epoch 33, Validation loss: 0.3637, Validation accuracy: 0.8344
- 33%|███▎      | 33/100 [1:30:07<3:02:02, 163.03s/it]Epoch 34, Validation loss: 0.3663, Validation accuracy: 0.8411
- 34%|███▍      | 34/100 [1:32:50<2:59:23, 163.08s/it]Epoch 35, Validation loss: 0.3839, Validation accuracy: 0.8411
- 35%|███▌      | 35/100 [1:35:33<2:56:27, 162.88s/it]Epoch 36, Validation loss: 0.3935, Validation accuracy: 0.8411
- 36%|███▌      | 36/100 [1:38:15<2:53:33, 162.71s/it]Epoch 37, Validation loss: 0.3157, Validation accuracy: 0.8411
- 37%|███▋      | 37/100 [1:40:59<2:51:15, 163.11s/it]Epoch 38, Validation loss: 0.3507, Validation accuracy: 0.8411
- 38%|███▊      | 38/100 [1:43:43<2:48:38, 163.20s/it]Epoch 39, Validation loss: 0.3714, Validation accuracy: 0.8278
- 39%|███▉      | 39/100 [1:46:27<2:46:20, 163.62s/it]Epoch 40, Validation loss: 0.3622, Validation accuracy: 0.8212
- 40%|████      | 40/100 [1:49:11<2:43:31, 163.53s/it]Epoch 41, Validation loss: 0.3674, Validation accuracy: 0.8411
- 41%|████      | 41/100 [1:51:53<2:40:33, 163.28s/it]Epoch 42, Validation loss: 0.3898, Validation accuracy: 0.8344
- 42%|████▏     | 42/100 [1:54:36<2:37:36, 163.05s/it]Epoch 43, Validation loss: 0.4059, Validation accuracy: 0.8411
- 43%|████▎     | 43/100 [1:57:19<2:35:00, 163.16s/it]Epoch 44, Validation loss: 0.3769, Validation accuracy: 0.8411
- 44%|████▍     | 44/100 [2:00:03<2:32:23, 163.27s/it]Epoch 45, Validation loss: 0.4416, Validation accuracy: 0.8411
- 45%|████▌     | 45/100 [2:02:47<2:29:53, 163.51s/it]Epoch 46, Validation loss: 0.4455, Validation accuracy: 0.8477
- 46%|████▌     | 46/100 [2:05:29<2:26:49, 163.15s/it]Epoch 47, Validation loss: 0.3615, Validation accuracy: 0.8278
- 47%|████▋     | 47/100 [2:08:13<2:24:13, 163.27s/it]Epoch 48, Validation loss: 0.4600, Validation accuracy: 0.8477
- 48%|████▊     | 48/100 [2:10:57<2:21:48, 163.62s/it]Epoch 49, Validation loss: 0.4081, Validation accuracy: 0.8477
- 49%|████▉     | 49/100 [2:13:42<2:19:18, 163.90s/it]Epoch 50, Validation loss: 0.4177, Validation accuracy: 0.8344
- 50%|█████     | 50/100 [2:16:28<2:17:08, 164.57s/it]Epoch 51, Validation loss: 0.4263, Validation accuracy: 0.8344
- 51%|█████     | 51/100 [2:19:11<2:14:12, 164.33s/it]Epoch 52, Validation loss: 0.4262, Validation accuracy: 0.8344
- 52%|█████▏    | 52/100 [2:21:56<2:11:28, 164.34s/it]Epoch 53, Validation loss: 0.4228, Validation accuracy: 0.8344
- 53%|█████▎    | 53/100 [2:24:37<2:08:05, 163.51s/it]Epoch 54, Validation loss: 0.3840, Validation accuracy: 0.8411
- 54%|█████▍    | 54/100 [2:27:20<2:05:15, 163.37s/it]Epoch 55, Validation loss: 0.5093, Validation accuracy: 0.8411
- 55%|█████▌    | 55/100 [2:30:04<2:02:32, 163.39s/it]Epoch 56, Validation loss: 0.3472, Validation accuracy: 0.8477
- 56%|█████▌    | 56/100 [2:32:47<1:59:44, 163.28s/it]Epoch 57, Validation loss: 0.5612, Validation accuracy: 0.8411
- 57%|█████▋    | 57/100 [2:35:29<1:56:49, 163.02s/it]Epoch 58, Validation loss: 0.4099, Validation accuracy: 0.8543
- 58%|█████▊    | 58/100 [2:38:11<1:53:51, 162.66s/it]Epoch 59, Validation loss: 0.4263, Validation accuracy: 0.8411
- 59%|█████▉    | 59/100 [2:40:55<1:51:26, 163.08s/it]Epoch 60, Validation loss: 0.4728, Validation accuracy: 0.8411
- 60%|██████    | 60/100 [2:43:38<1:48:40, 163.02s/it]Epoch 61, Validation loss: 0.4439, Validation accuracy: 0.8411
- 61%|██████    | 61/100 [2:46:22<1:46:08, 163.28s/it]Epoch 62, Validation loss: 0.3946, Validation accuracy: 0.8609
- 62%|██████▏   | 62/100 [2:49:05<1:43:17, 163.08s/it]Epoch 63, Validation loss: 0.4364, Validation accuracy: 0.8609
- 63%|██████▎   | 63/100 [2:51:47<1:40:22, 162.78s/it]Epoch 64, Validation loss: 0.6107, Validation accuracy: 0.8477
- 64%|██████▍   | 64/100 [2:54:29<1:37:37, 162.70s/it]Epoch 65, Validation loss: 0.4227, Validation accuracy: 0.8477
- 65%|██████▌   | 65/100 [2:57:12<1:34:55, 162.73s/it]Epoch 66, Validation loss: 0.4119, Validation accuracy: 0.8609
- 66%|██████▌   | 66/100 [2:59:55<1:32:10, 162.67s/it]Epoch 67, Validation loss: 0.4319, Validation accuracy: 0.8543
- 67%|██████▋   | 67/100 [3:02:38<1:29:33, 162.82s/it]Epoch 68, Validation loss: 0.3948, Validation accuracy: 0.8543
- 68%|██████▊   | 68/100 [3:05:19<1:26:36, 162.40s/it]Epoch 69, Validation loss: 0.5113, Validation accuracy: 0.8609
- 69%|██████▉   | 69/100 [3:08:03<1:24:05, 162.77s/it]Epoch 70, Validation loss: 0.5311, Validation accuracy: 0.8411
- 70%|███████   | 70/100 [3:10:46<1:21:29, 162.99s/it]Epoch 71, Validation loss: 0.4005, Validation accuracy: 0.8543
- 71%|███████   | 71/100 [3:13:28<1:18:39, 162.73s/it]Epoch 72, Validation loss: 0.3875, Validation accuracy: 0.8411
- 72%|███████▏  | 72/100 [3:16:12<1:16:00, 162.87s/it]Epoch 73, Validation loss: 0.4003, Validation accuracy: 0.8609
- 73%|███████▎  | 73/100 [3:18:53<1:13:09, 162.57s/it]Epoch 74, Validation loss: 0.4988, Validation accuracy: 0.8477
- 74%|███████▍  | 74/100 [3:21:36<1:10:27, 162.58s/it]Epoch 75, Validation loss: 0.4564, Validation accuracy: 0.8477
- 75%|███████▌  | 75/100 [3:24:19<1:07:45, 162.61s/it]Epoch 76, Validation loss: 0.4500, Validation accuracy: 0.8477
- 76%|███████▌  | 76/100 [3:27:02<1:05:04, 162.69s/it]Epoch 77, Validation loss: 0.4764, Validation accuracy: 0.8543
- 77%|███████▋  | 77/100 [3:29:43<1:02:10, 162.19s/it]Epoch 78, Validation loss: 0.4247, Validation accuracy: 0.8543
- 78%|███████▊  | 78/100 [3:32:25<59:31, 162.35s/it]  Epoch 79, Validation loss: 0.4683, Validation accuracy: 0.8609
- 79%|███████▉  | 79/100 [3:35:06<56:41, 161.96s/it]Epoch 80, Validation loss: 0.5049, Validation accuracy: 0.8609
- 80%|████████  | 80/100 [3:37:48<53:56, 161.83s/it]Epoch 81, Validation loss: 0.4472, Validation accuracy: 0.8411
- 81%|████████  | 81/100 [3:40:31<51:20, 162.14s/it]Epoch 82, Validation loss: 0.4751, Validation accuracy: 0.8609
- 82%|████████▏ | 82/100 [3:43:13<48:37, 162.10s/it]Epoch 83, Validation loss: 0.5642, Validation accuracy: 0.8278
- 83%|████████▎ | 83/100 [3:45:57<46:04, 162.63s/it]Epoch 84, Validation loss: 0.5392, Validation accuracy: 0.8411
- 84%|████████▍ | 84/100 [3:48:37<43:12, 162.01s/it]Epoch 85, Validation loss: 0.6567, Validation accuracy: 0.8477
- 85%|████████▌ | 85/100 [3:51:19<40:29, 161.99s/it]Epoch 86, Validation loss: 0.4620, Validation accuracy: 0.8344
- 86%|████████▌ | 86/100 [3:54:01<37:45, 161.84s/it]Epoch 87, Validation loss: 0.4463, Validation accuracy: 0.8344
- 86%|████████▌ | 86/100 [3:56:43<38:32, 165.15s/it]
-Early stopping due to validation loss not improving for 50 epochs
-best validation loss:  0.3157399781048298
-Best learning rate: 0.0001
------completing training-----
-end time: 2023-07-22 02:31:49.250149
-Execution time:  15:52:14.813446

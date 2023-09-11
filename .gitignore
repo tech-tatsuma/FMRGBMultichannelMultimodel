@@ -3,3 +3,6 @@
 *.pth
 *.pt
 __pycache__
+log
+graph
+*.png
