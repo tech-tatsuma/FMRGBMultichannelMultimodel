@@ -44,6 +44,7 @@ def process_video_withmel(video_path, max_frames, parameter, isfmrgb, skip, outp
     # ビデオのfpsを取得する
     fps = video.get(cv2.CAP_PROP_FPS)
     print('fps: ', fps)
+    print(isfmrgb)
 
     # flowoutput動画を読み込む
     flow_output_filename = os.path.splitext(os.path.basename(video_path))[0] + 'flowoutput.mp4'
@@ -113,6 +114,10 @@ def process_video_withmel(video_path, max_frames, parameter, isfmrgb, skip, outp
     frame_count=0
 
     base_filename = os.path.splitext(os.path.basename(video_path))[0]
+    if isfmrgb == 'false':
+        output_file_path = os.path.join(output_dir, base_filename + '.mp4')
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out_video = cv2.VideoWriter(output_file_path, fourcc, fps, (frame_width, frame_height))
 
     while True:
         ret, frame = video.read()
@@ -149,11 +154,17 @@ def process_video_withmel(video_path, max_frames, parameter, isfmrgb, skip, outp
             break
         frame_count += 1
         pbar.update(1)
-
+    
     frames = np.stack(frames)
-
-    output_file_path = os.path.join(output_dir, base_filename + '.pt')
-    torch.save(torch.from_numpy(frames), output_file_path)
+    if isfmrgb=='true':
+        output_file_path = os.path.join(output_dir, base_filename + '.pt')
+        torch.save(torch.from_numpy(frames), output_file_path)
+    if isfmrgb == 'false':
+        for frame in frames:
+            out_video.write(frame)
+        out_video.release()
+    video.release()
+    flow_video.release()
 
 # 動画を読み込み、音声を抽出し、フレームを処理してテンソルとして保存する関数
 def process_video(video_path, max_frames, parameter, isfmrgb, skip, output_dir):
