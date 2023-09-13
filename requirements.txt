@@ -5,4 +5,6 @@ tqdm==4.65.0
 pillow==9.5.0
 scipy==1.10.1
 matplotlib==3.7.1
-pandas
+pandas==2.0.2
+einops==0.3.2
+torchinfo
