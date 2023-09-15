@@ -1,11 +1,10 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, DCNConvLSTM_FC
+from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT
 import torch
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import transforms
 from torch.optim.lr_scheduler import StepLR
 import pandas as pd
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import argparse
@@ -27,6 +26,28 @@ def seed_everything(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
+# 正規化、標準化のための統計量をサブセットを使って算出する関数
+def calculate_approximate_mean_and_std(dataset, num_samples=1000, num_frames=10):
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+    mean = 0.
+    std = 0.
+    num_pixels = 0
+    
+    for i, (video, _) in enumerate(dataloader):
+        if i == num_samples:
+            break
+        # Randomly sample 'num_frames' frames from the video
+        indices = np.random.choice(video.shape[1], num_frames)
+        sample = video[:, indices, :, :, :]
+
+        mean += torch.mean(sample, dim=[0, 1, 2, 3])
+        std += torch.std(sample, dim=[0, 1, 2, 3])
+        num_pixels += np.prod(sample.shape[1:])
+
+    mean /= num_samples
+    std /= num_samples
+    return mean, std
+
 # メイン関数
 def train(opt):
 
@@ -45,28 +66,39 @@ def train(opt):
     learning_rate = opt.lr
     usescheduler = opt.usescheduler
 
+    addpath = os.path.dirname(data_file)
+
     # データの前処理
     transform = transforms.Compose([
         transforms.Resize((56, 56)), 
         transforms.ToTensor()
     ])
 
-    # データセットの取得
-    full_dataset = VideoDataset(csv_file=data_file, transform=transform)
-    train_size = int(train_size * len(full_dataset))
-    val_size = len(full_dataset) - train_size
+    # 正規化、標準化に必要な計算を行うために一度データをロード
+    initial_dataset = VideoDataset(csv_file=data_file, transform=transform, addpath=addpath)
+
+    # 訓練用、評価用のデータサイズを設定
+    train_size = int(train_size * len(initial_dataset))
+    val_size = len(initial_dataset) - train_size
+
+    # データの平均、標準偏差を計算
+    _, initial_val_dataset = random_split(initial_dataset, [train_size, val_size])
+    mean, std = calculate_approximate_mean_and_std(initial_val_dataset)
+
+    # 正規化を行いながらデータセットを作成
+    full_dataset = VideoDataset(csv_file=data_file, transform=transform, mean=mean, std=std, addpath=addpath)
 
     # データの分割
     train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
 
     # データローダの取得
-    train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
 
     # モデルの選択
     if learningmethod=='conv3d':
         # conv3dモデルの設定
-        model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=20, image_size=56).to(device)
+        model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=4, depth=100, height=56, width=56).to(device)
         criterion = nn.MSELoss()
 
     elif learningmethod=='convlstm':
@@ -81,8 +113,9 @@ def train(opt):
 
     elif learningmethod=='convlstmwithdcn':
         # DCNConvLSTM_FCの設定
-        model =  DCNConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
-        criterion = nn.MSELoss()
+        # model =  DCNConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
+        # criterion = nn.MSELoss()
+        print('まだ実装が完了していません。別のオプションで実行してください。')
     else:
         # 入力が不適切だった時の処理
         print('error: inappropriate input(learning method)')
@@ -153,11 +186,17 @@ def train(opt):
         # 検証データでの評価
         with torch.no_grad():
             for i, (inputs, labels) in enumerate(val_loader):
+                
+                # データをGPUに転送
                 inputs, labels = inputs.to(device), labels.to(device)
+                
                 if inputs.dtype != torch.float32:
                     inputs = inputs.float()
                     
                 outputs = model(inputs)
+
+                # ここで labels と outputs の shape を確認
+                # print(f"Labels shape: {labels.shape}, Outputs shape: {outputs.shape}")
 
                 val_loss += criterion(outputs, labels).item()
                 

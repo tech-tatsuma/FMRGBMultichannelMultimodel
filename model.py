@@ -5,12 +5,12 @@ from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
 from previvitmodel import Attention, PreNorm, FeedForward
 import torch.nn as nn
-from ops_dcnv3.modules.dcnv3 import DCNv3
+# from .ops_dcnv3.modules.dcnv3 import DCNv3
 
 # 3dcnn
 class ConvNet3D(nn.Module):
-    def __init__(self, in_channels=3, num_tasks=5, batch_size=20, image_size=56):
-        super(MultiTaskConvNet3D, self).__init__()
+    def __init__(self, in_channels=3, num_tasks=5, batch_size=20, depth=1500, height=56, width=56):
+        super(ConvNet3D, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv3d(in_channels, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -19,8 +19,10 @@ class ConvNet3D(nn.Module):
 
         # Compute the size of Linear layer input
         self._to_linear = None
-        x = torch.randn(batch_size, in_channels, 32, image_size, image_size)  # Replace with your input shape
+        x = torch.randn(batch_size, in_channels, depth, height, width)  # Now matching the dataset shape
+        # print('shape of x: ', x.shape)
         self.convs(x)
+        # print(f"Calculated _to_linear: {self._to_linear}")
 
         # Shared layers
         self.shared_fc = nn.Sequential(
@@ -42,12 +44,17 @@ class ConvNet3D(nn.Module):
         return x
 
     def forward(self, x):
+        # print("Shape of input to the model:", x.shape)
         x = self.convs(x)
+        # print("Shape of tensor after conv layers:", x.shape)
         x = x.view(-1, self._to_linear)
+        # print("Shape of tensor after view layers:", x.shape)
         x = self.shared_fc(x)
-        
+        # print("Shape of tensor after shared layers:", x.shape)
         # Compute task-specific outputs
         outputs = [task_fc(x) for task_fc in self.task_fcs]
+
+        outputs = torch.cat(outputs, dim=1)
         
         return outputs
 # convlstm
@@ -149,6 +156,8 @@ class ConvLSTM_FC(ConvLSTM):
         
         # Compute task-specific outputs
         outputs = [task_fc(shared_output) for task_fc in self.task_fcs]
+
+        outputs = torch.cat(outputs, dim=1)
         
         return outputs
 
@@ -253,97 +262,97 @@ class MultiTaskViViT(ViViT):
 
         return outputs  # Return list of outputs for each task
 
-class DCNConvLSTMCell(nn.Module):
-    def __init__(self, input_dim, hidden_dim, kernel_size, bias, group=4, offset_scale=1.0):
-        super(DCNConvLSTMCell, self).__init__()
-        self.hidden_dim = hidden_dim
+# class DCNConvLSTMCell(nn.Module):
+#     def __init__(self, input_dim, hidden_dim, kernel_size, bias, group=4, offset_scale=1.0):
+#         super(DCNConvLSTMCell, self).__init__()
+#         self.hidden_dim = hidden_dim
 
-        self.dcn = DCNv3(
-            channels=input_dim + hidden_dim,
-            kernel_size=kernel_size,
-            group=group,
-            offset_scale=offset_scale
-        )
+#         self.dcn = DCNv3(
+#             channels=input_dim + hidden_dim,
+#             kernel_size=kernel_size,
+#             group=group,
+#             offset_scale=offset_scale
+#         )
 
-        self.conv = nn.Conv2d(in_channels=hidden_dim,
-                              out_channels=4 * hidden_dim,
-                              kernel_size=1,
-                              padding=0,
-                              bias=bias)
+#         self.conv = nn.Conv2d(in_channels=hidden_dim,
+#                               out_channels=4 * hidden_dim,
+#                               kernel_size=1,
+#                               padding=0,
+#                               bias=bias)
 
-    def forward(self, input_tensor, cur_state):
-        h_cur, c_cur = cur_state
-        dcn_output = self.dcn(torch.cat([input_tensor, h_cur], dim=1))
-        combined_conv = self.conv(dcn_output)
-        i, f, o, g = torch.sigmoid(combined_conv).chunk(4, dim=1)
-        c_next = f * c_cur + i * torch.tanh(g)
-        return o * torch.tanh(c_next), c_next
+#     def forward(self, input_tensor, cur_state):
+#         h_cur, c_cur = cur_state
+#         dcn_output = self.dcn(torch.cat([input_tensor, h_cur], dim=1))
+#         combined_conv = self.conv(dcn_output)
+#         i, f, o, g = torch.sigmoid(combined_conv).chunk(4, dim=1)
+#         c_next = f * c_cur + i * torch.tanh(g)
+#         return o * torch.tanh(c_next), c_next
 
-    def init_hidden(self, batch_size, image_size):
-        return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.weight.device),
-                torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.weight.device))
+#     def init_hidden(self, batch_size, image_size):
+#         return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.weight.device),
+#                 torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.weight.device))
 
-class DCNConvLSTM(ConvLSTM):
-    def __init__(self, *args, **kwargs):
-        super(DCNConvLSTM, self).__init__(*args, **kwargs)
+# class DCNConvLSTM(ConvLSTM):
+#     def __init__(self, *args, **kwargs):
+#         super(DCNConvLSTM, self).__init__(*args, **kwargs)
 
-    def forward(self, input_tensor, hidden_state=None):
-        b, seq_len, _, h, w = input_tensor.size()
+#     def forward(self, input_tensor, hidden_state=None):
+#         b, seq_len, _, h, w = input_tensor.size()
 
-        if hidden_state is None:
-            hidden_state = [cell.init_hidden(b, (h, w)) for cell in self.cell_list]
+#         if hidden_state is None:
+#             hidden_state = [cell.init_hidden(b, (h, w)) for cell in self.cell_list]
 
-        layer_output_list, last_state_list = [], []
-        for layer_idx, cell in enumerate(self.cell_list):
-            h, c = hidden_state[layer_idx]
-            output_inner = []
-            for t in range(seq_len):
-                h, c = cell(input_tensor[:, t, :, :, :], (h, c))
-                output_inner.append(h)
-            layer_output = torch.stack(output_inner, dim=1)
-            layer_output_list.append(layer_output.permute(0, 2, 1, 3, 4))
-            last_state_list.append((h, c))
-            input_tensor = layer_output
+#         layer_output_list, last_state_list = [], []
+#         for layer_idx, cell in enumerate(self.cell_list):
+#             h, c = hidden_state[layer_idx]
+#             output_inner = []
+#             for t in range(seq_len):
+#                 h, c = cell(input_tensor[:, t, :, :, :], (h, c))
+#                 output_inner.append(h)
+#             layer_output = torch.stack(output_inner, dim=1)
+#             layer_output_list.append(layer_output.permute(0, 2, 1, 3, 4))
+#             last_state_list.append((h, c))
+#             input_tensor = layer_output
 
-        if not self.return_all_layers:
-            layer_output_list, last_state_list = layer_output_list[-1:], last_state_list[-1:]
+#         if not self.return_all_layers:
+#             layer_output_list, last_state_list = layer_output_list[-1:], last_state_list[-1:]
 
-        return layer_output_list, last_state_list
+#         return layer_output_list, last_state_list
 
-class DCNConvLSTM_FC(DCNConvLSTM):
-    def __init__(self, num_tasks=5, *args, **kwargs):
-        super(DCNConvLSTM_FC, self).__init__(*args, **kwargs)
-        self.num_tasks = num_tasks
-        self.attention = nn.Sequential(
-            nn.Conv2d(32, 1, kernel_size=1),
-            nn.Sigmoid()
-        )
+# class DCNConvLSTM_FC(DCNConvLSTM):
+#     def __init__(self, num_tasks=5, *args, **kwargs):
+#         super(DCNConvLSTM_FC, self).__init__(*args, **kwargs)
+#         self.num_tasks = num_tasks
+#         self.attention = nn.Sequential(
+#             nn.Conv2d(32, 1, kernel_size=1),
+#             nn.Sigmoid()
+#         )
         
-        self.dropout1 = nn.Dropout(0.5)
-        self.dropout2 = nn.Dropout(0.5)
+#         self.dropout1 = nn.Dropout(0.5)
+#         self.dropout2 = nn.Dropout(0.5)
         
-        self.shared_fc = nn.Sequential(
-            nn.Linear(32, 128),
-            nn.ReLU(),
-            self.dropout1,
-            nn.Linear(128, 32),
-            nn.ReLU(),
-            self.dropout2
-        )
+#         self.shared_fc = nn.Sequential(
+#             nn.Linear(32, 128),
+#             nn.ReLU(),
+#             self.dropout1,
+#             nn.Linear(128, 32),
+#             nn.ReLU(),
+#             self.dropout2
+#         )
         
-        self.task_fcs = nn.ModuleList([nn.Linear(32, 1) for _ in range(num_tasks)])
+#         self.task_fcs = nn.ModuleList([nn.Linear(32, 1) for _ in range(num_tasks)])
 
-    def forward(self, input_tensor, hidden_state=None):
-        layer_output_list, last_state_list = super(DCNConvLSTM_FC, self).forward(input_tensor, hidden_state=hidden_state)
-        output = layer_output_list[-1][:, -1, :, :, :]
+#     def forward(self, input_tensor, hidden_state=None):
+#         layer_output_list, last_state_list = super(DCNConvLSTM_FC, self).forward(input_tensor, hidden_state=hidden_state)
+#         output = layer_output_list[-1][:, -1, :, :, :]
         
-        attention_map = self.attention(output)
-        output = (output * attention_map).sum(dim=[2, 3])
+#         attention_map = self.attention(output)
+#         output = (output * attention_map).sum(dim=[2, 3])
         
-        output = output.reshape(output.size(0), -1)
-        shared_output = self.shared_fc(output)
+#         output = output.reshape(output.size(0), -1)
+#         shared_output = self.shared_fc(output)
         
-        # Compute task-specific outputs
-        outputs = [task_fc(shared_output) for task_fc in self.task_fcs]
+#         # Compute task-specific outputs
+#         outputs = [task_fc(shared_output) for task_fc in self.task_fcs]
         
-        return outputs
+#         return outputs
