@@ -57,6 +57,7 @@ class ConvNet3D(nn.Module):
         outputs = torch.cat(outputs, dim=1)
         
         return outputs
+    
 # convlstm
 class ConvLSTMCell(nn.Module):
     def __init__(self, input_dim, hidden_dim, kernel_size, bias):

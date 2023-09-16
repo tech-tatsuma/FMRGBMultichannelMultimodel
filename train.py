@@ -16,7 +16,7 @@ from torchinfo import summary
 import sys
 import datetime
 import random
-from .loss import custom_loss
+from loss import custom_loss
 
 # シードの設定を行う関数
 def seed_everything(seed):
@@ -93,6 +93,9 @@ def train(opt):
     # データの分割
     train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
 
+    '''VideoDatasetによって作られるデータの形式は(チャンネル数,シーケンス長,縦ピクセル,横ピクセル)
+    '''
+
     # データローダの取得
     train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
@@ -103,14 +106,15 @@ def train(opt):
         model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=4, depth=100, height=56, width=56).to(device)
         criterion = nn.MSELoss()
 
+    # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
     elif learningmethod=='convlstm':
         # convlstmの設定
-        model = ConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3).to(device)
+        model = ConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3, num_tasks=5).to(device)
         criterion = nn.MSELoss()
-
+    # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
     elif learningmethod=='vivit':
         # vivitの設定
-        model = MultiTaskViViT(image_size=64, patch_size=16, num_classes=2, num_frames=64, in_channels=3).to(device)
+        model = MultiTaskViViT(image_size=56, patch_size=4, num_classes=1, num_frames=100, dim=192, depth=4, heads=3, num_tasks=5).to(device)
         criterion = nn.MSELoss()
 
     elif learningmethod=='convlstmwithdcn':
@@ -158,6 +162,10 @@ def train(opt):
 
         # trainデータのロード
         for i, (inputs, labels) in enumerate(train_loader):
+            
+            # もしconvlstmかvivitの場合はデータの形式を変更する
+            if learningmethod=='convlstm' or learningmethod=='vivit':
+                inputs = inputs.permute(0, 2, 1, 3, 4)
 
             # ビデオとラベルをGPUへ転送
             inputs, labels = inputs.to(device), labels.to(device)
@@ -189,6 +197,9 @@ def train(opt):
         # 検証データでの評価
         with torch.no_grad():
             for i, (inputs, labels) in enumerate(val_loader):
+
+                if learningmethod=='convlstm' or learningmethod=='vivit':
+                    inputs = inputs.permute(0, 2, 1, 3, 4)
                 
                 # データをGPUに転送
                 inputs, labels = inputs.to(device), labels.to(device)
@@ -232,9 +243,9 @@ def train(opt):
         if usescheduler == 'true':
             scheduler.step()
 
-    # Plotting the training and validation progress
+    # 学習プロセスをグラフ化し、保存する
     plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
     plt.plot(train_losses, label='Training loss')
     plt.plot(val_losses, label='Validation loss')
     plt.xlabel('Epochs')
@@ -245,11 +256,13 @@ def train(opt):
     return train_loss, val_loss_min
 
 if __name__=='__main__':
-    # get start time of program
+
+    # プログラムの動きだす時間を取得
     start_time = datetime.datetime.now()
     print('start time:',start_time)
     sys.stdout.flush()
-    # setting parser
+
+    # パーサーの設定
     parser = argparse.ArgumentParser()
     parser.add_argument('--data',type=str, required=True, help='csv data')
     parser.add_argument('--epochs',type=int, required=True, help='epochs')
@@ -262,17 +275,20 @@ if __name__=='__main__':
     parser.add_argument('--usescheduler', type=str, default='false', help='use lr scheduler true or false')
     parser.add_argument('--seed', type=int, default=42, help='Seed for random number generators')
     opt = parser.parse_args()
-    # confirm the option
+    # オプションを標準出力する
     print(opt)
     sys.stdout.flush()
 
+    # 学習率の探索を行わない場合
     if opt.islearnrate_search == 'false':
         print('-----biginning training-----')
         sys.stdout.flush()
         train_loss, val_loss = train(opt)
+        print('final train loss: ',train_loss)
         print('final validation loss: ', val_loss)
         sys.stdout.flush()
 
+    # 学習率の探索を行う場合
     elif opt.islearnrate_search == 'true':
         learning_rates = [0.001, 0.002, 0.003, 0.004]
         best_loss = float('inf')
@@ -295,10 +311,11 @@ if __name__=='__main__':
         sys.stdout.flush()
 
     else:
+        # オプションの入力が誤っている時
         print('error: inappropriate input(islearnrate_search)')
-    # get end time of program
+
+    # プログラムの終了時間を取得し、実行時間の計算、表示
     end_time = datetime.datetime.now()
-    # calculate execution time with start and end time
     execution_time = end_time - start_time
     print('-----completing training-----')
     sys.stdout.flush()
