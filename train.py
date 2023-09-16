@@ -16,6 +16,7 @@ from torchinfo import summary
 import sys
 import datetime
 import random
+from .loss import custom_loss
 
 # シードの設定を行う関数
 def seed_everything(seed):
@@ -65,6 +66,7 @@ def train(opt):
     learningmethod = opt.learnmethod
     learning_rate = opt.lr
     usescheduler = opt.usescheduler
+    rankloss = opt.rankloss
 
     addpath = os.path.dirname(data_file)
 
@@ -169,9 +171,10 @@ def train(opt):
 
             # モデルの適用
             outputs = model(inputs)
-
-            # Forward + backward + optimize
-            loss = criterion(outputs, labels)
+            if rankloss=='false':
+                loss = criterion(outputs, labels)
+            else:
+                loss = custom_loss(outputs,labels)
             loss.backward()
             optimizer.step()
 
@@ -197,8 +200,10 @@ def train(opt):
 
                 # ここで labels と outputs の shape を確認
                 # print(f"Labels shape: {labels.shape}, Outputs shape: {outputs.shape}")
-
-                val_loss += criterion(outputs, labels).item()
+                if rankloss=='false':
+                    val_loss += criterion(outputs, labels).item()
+                else :
+                    val_loss += custom_loss(outputs, labels)
                 
 
         val_loss /= len(val_loader)
@@ -235,6 +240,7 @@ def train(opt):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
+    plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.png')
 
     return train_loss, val_loss_min
 
@@ -250,6 +256,7 @@ if __name__=='__main__':
     parser.add_argument('--lr',type=float, default=0.001, help='learning rate')
     parser.add_argument('--train_size', type=float, default=0.2, help='testdata_ratio')
     parser.add_argument('--patience', type=int, default=5, help='patience')
+    parser.add_argument('--rankloss',type=str, default='false',help='use use ranking loss?')
     parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm or vivit')
     parser.add_argument('--islearnrate_search', type=str, default='false', help='is learningrate search ?')
     parser.add_argument('--usescheduler', type=str, default='false', help='use lr scheduler true or false')
