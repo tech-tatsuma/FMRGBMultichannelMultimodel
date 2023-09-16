@@ -17,7 +17,7 @@ https://github.com/kyutech-tatsuma/robustvideomatting.git
     
 ### Data visualisation
 ```
-python visualize.py --target <ptファイル>
+python visualize.py --target <pt>
 ```
 ### FMRGB multi-channel model training.
 ```
