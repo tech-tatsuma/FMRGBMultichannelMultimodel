@@ -11,20 +11,25 @@ import torch.nn as nn
 class ConvNet3D(nn.Module):
     def __init__(self, in_channels=3, num_tasks=5, batch_size=20, depth=1500, height=56, width=56):
         super(ConvNet3D, self).__init__()
+
+        # convolution層
         self.conv = nn.Sequential(
             nn.Conv3d(in_channels, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool3d(2),
         )
 
-        # Compute the size of Linear layer input
+        # 全結合層への入力次元を計算する
         self._to_linear = None
-        x = torch.randn(batch_size, in_channels, depth, height, width)  # Now matching the dataset shape
+
+        # 入力と同じ形式のデータを作成する（次元の計算用）
+        x = torch.randn(batch_size, in_channels, depth, height, width)
+        # 出力データの型を確認したいときは以下のprint文のコメントを外す
         # print('shape of x: ', x.shape)
         self.convs(x)
         # print(f"Calculated _to_linear: {self._to_linear}")
 
-        # Shared layers
+        # 全結合層
         self.shared_fc = nn.Sequential(
             nn.Linear(self._to_linear, 128),
             nn.ReLU(),
@@ -34,16 +39,18 @@ class ConvNet3D(nn.Module):
             nn.Dropout(0.25),
         )
 
-        # Task-specific layers
+        # マルチタスクに対応させるための層
         self.task_fcs = nn.ModuleList([nn.Linear(64, 1) for _ in range(num_tasks)])
 
     def convs(self, x):
         x = self.conv(x)
+        # 次の全結合層に入力するための次元を計算する
         if self._to_linear is None:
             self._to_linear = x[0].shape[0]*x[0].shape[1]*x[0].shape[2]*x[0].shape[3]
         return x
 
     def forward(self, x):
+        # 入力のデータの形式を確認したいときは以下のprint文のコメントを外す
         # print("Shape of input to the model:", x.shape)
         x = self.convs(x)
         # print("Shape of tensor after conv layers:", x.shape)
@@ -54,8 +61,60 @@ class ConvNet3D(nn.Module):
         # Compute task-specific outputs
         outputs = [task_fc(x) for task_fc in self.task_fcs]
 
+        # 最後はテンソルに直して関数の出力とする
         outputs = torch.cat(outputs, dim=1)
         
+        return outputs
+
+# 混合エキスパートを導入したconv3dネットワーク
+class MoEConvNet3D(nn.Module):
+    def __init__(self, in_channels, batch_size, depth, height, width):
+        super(MoEConvNet3D, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv3d(in_channels, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool3d(2),
+        )
+
+        self._to_linear = None
+        x = torch.randn(batch_size, in_channels, depth, height, width)
+        self.convs(x)
+
+        self.fc = nn.Linear(self._to_linear, 64)
+
+    def convs(self, x):
+        x = self.conv(x)
+        if self._to_linear is None:
+            self._to_linear = x[0].shape[0]*x[0].shape[1]*x[0].shape[2]*x[0].shape[3]
+        return x
+
+    def forward(self, x):
+        x = self.convs(x)
+        x = x.view(-1, self._to_linear)
+        x = self.fc(x)
+        return x
+
+
+class MixtureOfExperts(nn.Module):
+    def __init__(self, in_channels, num_experts, batch_size, depth, height, width, num_tasks):
+        super(MixtureOfExperts, self).__init__()
+        self.experts = nn.ModuleList([MoEConvNet3D(in_channels, batch_size, depth, height, width) for _ in range(num_experts)])
+        self.gate = MoEConvNet3D(in_channels, batch_size, depth, height, width)
+
+        # Task-specific layers
+        self.task_fcs = nn.ModuleList([nn.Linear(64, 1) for _ in range(num_tasks)])
+
+    def forward(self, x):
+        gate_output = f.softmax(self.gate(x), dim=1)
+        expert_outputs = [expert(x) for expert in self.experts]
+
+        final_output = 0
+        for i, expert_output in enumerate(expert_outputs):
+            weighted_output = gate_output[:, i].view(-1, 1) * expert_output
+            final_output += weighted_output
+
+        outputs = [task_fc(final_output) for task_fc in self.task_fcs]
+        outputs = torch.cat(outputs, dim=1)
         return outputs
     
 # convlstm

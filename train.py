@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT
+from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, MixtureOfExperts
 import torch
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import transforms
@@ -97,13 +97,13 @@ def train(opt):
     '''
 
     # データローダの取得
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
 
     # モデルの選択
     if learningmethod=='conv3d':
         # conv3dモデルの設定
-        model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=4, depth=100, height=56, width=56).to(device)
+        model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=100, height=56, width=56).to(device)
         criterion = nn.MSELoss()
 
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
@@ -116,7 +116,10 @@ def train(opt):
         # vivitの設定
         model = MultiTaskViViT(image_size=56, patch_size=4, num_classes=1, num_frames=100, dim=192, depth=4, heads=3, num_tasks=5).to(device)
         criterion = nn.MSELoss()
-
+    # MoEを導入したネットワークの呼び出し
+    elif learningmethod=='moeconv3d':
+        model = MixtureOfExperts(3, 3, 20, 100, 56, 56, 5).to(device)
+        criterion = nn.MSELoss()
     elif learningmethod=='convlstmwithdcn':
         # DCNConvLSTM_FCの設定
         # model =  DCNConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
@@ -149,6 +152,7 @@ def train(opt):
     # 学習結果を監視するための配列を定義
     train_losses = []
     val_losses = []
+    val_anotherlosses = []
 
     # モデルの訓練
     for epoch in tqdm(range(epochs)):
@@ -156,6 +160,7 @@ def train(opt):
         # 各種パラメータの初期化
         train_loss = 0.0
         val_loss = 0.0
+        val_anotherloss = 0.0
 
         # モデルをtrainモードに設定
         model.train()
@@ -213,14 +218,19 @@ def train(opt):
                 # print(f"Labels shape: {labels.shape}, Outputs shape: {outputs.shape}")
                 if rankloss=='false':
                     val_loss += criterion(outputs, labels).item()
+                    val_anotherloss += custom_loss(outputs, labels)
                 else :
                     val_loss += custom_loss(outputs, labels)
+                    val_anotherloss += criterion(outputs, labels).item()
                 
 
         val_loss /= len(val_loader)
         val_losses.append(val_loss)
 
-        print(f'Epoch {epoch+1}, Validation loss: {val_loss:.4f}')
+        val_anotherloss /= len(val_loader)
+        val_anotherlosses.append(val_anotherloss)
+
+        print(f'Epoch {epoch+1}, Validation loss: {val_loss:.4f}, another loss: {val_anotherloss:.4f}')
         sys.stdout.flush()
 
         # メモリーを最適化する
@@ -244,13 +254,34 @@ def train(opt):
             scheduler.step()
 
     # 学習プロセスをグラフ化し、保存する
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(15, 5))
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+
+    # 一つ目のグラフ
+    plt.subplot(1, 2, 1)
+    # plt.ylim([0, 10])
     plt.plot(train_losses, label='Training loss')
     plt.plot(val_losses, label='Validation loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
+    # もし学習にRank lossを使った場合はそれを表示
+    if rankloss=='true':
+        plt.title("Training and Validation Rank Loss")
+    else: # 学習にMSE lossを使った場合
+        plt.title("Training and Validation MSE Loss")
+
+    # 二つ目のグラフ
+    plt.subplot(1, 2, 2)
+    # もし学習にランキングロスを使った場合はMSE lossを表示
+    if rankloss=='true':
+        plt.plot(val_anotherlosses, label='MSE Validation loss')
+    else: # もし学習にMSE lossを使った場合はRank lossを表示
+        plt.plot(val_anotherlosses, label='Rank Validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Custom Loss')
+    plt.legend()
+    plt.title("Another Validation Loss")
     plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.png')
 
     return train_loss, val_loss_min

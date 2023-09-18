@@ -39,6 +39,8 @@ class VideoDataset(Dataset):
     
     # データセットを取得する関数
     def __getitem__(self, idx):
+
+        triming_param = 300
         # 動画のパス
         file_path = self.addpath + '/' + self.file_list[idx]
         print(file_path)
@@ -46,11 +48,15 @@ class VideoDataset(Dataset):
         frames = []
         # ビデオキャプチャー
         cap = cv2.VideoCapture(file_path)
-        
+        # フレームのカウント変数を用意する
+        counter = 0
         # 動画データをフレームごとに取得
         while True:
             ret, frame = cap.read()
             if not ret:
+                break
+            # 10秒間でデータをトリミングする
+            if counter > triming_param:
                 break
             frame = Image.fromarray(frame)
             if self.transform:
@@ -60,6 +66,7 @@ class VideoDataset(Dataset):
                 frame = F.to_tensor(frame)
             # フレームごとにテンソルとして動画に格納
             frames.append(frame)
+            counter = counter + 1
 
         cap.release()
 
