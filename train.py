@@ -16,7 +16,7 @@ from torchinfo import summary
 import sys
 import datetime
 import random
-from loss import custom_loss
+from loss import validation_function, OrdinalRegressionLoss
 
 # シードの設定を行う関数
 def seed_everything(seed):
@@ -104,22 +104,38 @@ def train(opt):
     if learningmethod=='conv3d':
         # conv3dモデルの設定
         model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=100, height=56, width=56).to(device)
-        criterion = nn.MSELoss()
+        # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
+        if rankloss=='false':
+            criterion = nn.MSELoss()
+        else:
+            criterion = OrdinalRegressionLoss(num_classes=101, device=device)
 
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
     elif learningmethod=='convlstm':
         # convlstmの設定
         model = ConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3, num_tasks=5).to(device)
-        criterion = nn.MSELoss()
+        # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
+        if rankloss=='false':
+            criterion = nn.MSELoss()
+        else:
+            criterion = OrdinalRegressionLoss(num_classes=101, device=device)
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
     elif learningmethod=='vivit':
         # vivitの設定
         model = MultiTaskViViT(image_size=56, patch_size=4, num_classes=1, num_frames=100, dim=192, depth=4, heads=3, num_tasks=5).to(device)
-        criterion = nn.MSELoss()
+        # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
+        if rankloss=='false':
+            criterion = nn.MSELoss()
+        else:
+            criterion = OrdinalRegressionLoss(num_classes=101, device=device)
     # MoEを導入したネットワークの呼び出し
     elif learningmethod=='moeconv3d':
         model = MixtureOfExperts(3, 3, 20, 100, 56, 56, 5).to(device)
-        criterion = nn.MSELoss()
+        # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
+        if rankloss=='false':
+            criterion = nn.MSELoss()
+        else:
+            criterion = OrdinalRegressionLoss(num_classes=101, device=device)
     elif learningmethod=='convlstmwithdcn':
         # DCNConvLSTM_FCの設定
         # model =  DCNConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
@@ -152,7 +168,7 @@ def train(opt):
     # 学習結果を監視するための配列を定義
     train_losses = []
     val_losses = []
-    val_anotherlosses = []
+    val_spearmans = []
 
     # モデルの訓練
     for epoch in tqdm(range(epochs)):
@@ -160,7 +176,7 @@ def train(opt):
         # 各種パラメータの初期化
         train_loss = 0.0
         val_loss = 0.0
-        val_anotherloss = 0.0
+        val_spearman = 0.0
 
         # モデルをtrainモードに設定
         model.train()
@@ -184,10 +200,9 @@ def train(opt):
 
             # モデルの適用
             outputs = model(inputs)
-            if rankloss=='false':
-                loss = criterion(outputs, labels)
-            else:
-                loss = custom_loss(outputs,labels)
+
+            loss = criterion(outputs, labels)
+
             loss.backward()
             optimizer.step()
 
@@ -214,23 +229,22 @@ def train(opt):
                     
                 outputs = model(inputs)
 
-                # ここで labels と outputs の shape を確認
-                # print(f"Labels shape: {labels.shape}, Outputs shape: {outputs.shape}")
-                if rankloss=='false':
-                    val_loss += criterion(outputs, labels).item()
-                    val_anotherloss += custom_loss(outputs, labels)
-                else :
-                    val_loss += custom_loss(outputs, labels)
-                    val_anotherloss += criterion(outputs, labels).item()
+                # val_lossにはランキングロス or 平均二乗誤差
+                val_loss += criterion(outputs, labels).item()
+                # val_spearmanにはスピアマンの相関順位係数が入る
+                val_spearman += validation_function(outputs, labels)
                 
-
         val_loss /= len(val_loader)
+        val_loss = val_loss.cpu()
+        val_loss = val_loss.detach().numpy()
         val_losses.append(val_loss)
 
-        val_anotherloss /= len(val_loader)
-        val_anotherlosses.append(val_anotherloss)
+        val_spearman /= len(val_loader)
+        val_spearman = val_spearman.cpu()
+        val_spearman = val_spearman.detach().numpy()
+        val_spearmans.append(val_spearman)
 
-        print(f'Epoch {epoch+1}, Validation loss: {val_loss:.4f}, another loss: {val_anotherloss:.4f}')
+        print(f'Epoch {epoch+1}, Training loss: {train_loss:.4f}, Validation loss: {val_loss:.4f}, Another loss: {val_spearman:.4f}')
         sys.stdout.flush()
 
         # メモリーを最適化する
@@ -275,9 +289,9 @@ def train(opt):
     plt.subplot(1, 2, 2)
     # もし学習にランキングロスを使った場合はMSE lossを表示
     if rankloss=='true':
-        plt.plot(val_anotherlosses, label='MSE Validation loss')
+        plt.plot(val_spearmans, label='MSE Validation loss')
     else: # もし学習にMSE lossを使った場合はRank lossを表示
-        plt.plot(val_anotherlosses, label='Rank Validation loss')
+        plt.plot(val_spearmans, label='Rank Validation loss')
     plt.xlabel('Epochs')
     plt.ylabel('Custom Loss')
     plt.legend()
