@@ -235,8 +235,6 @@ def train(opt):
                 val_spearman += validation_function(outputs, labels)
                 
         val_loss /= len(val_loader)
-        val_loss = val_loss.cpu()
-        val_loss = val_loss.detach().numpy()
         val_losses.append(val_loss)
 
         val_spearman /= len(val_loader)
