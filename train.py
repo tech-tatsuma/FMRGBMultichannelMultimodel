@@ -16,7 +16,7 @@ from torchinfo import summary
 import sys
 import datetime
 import random
-from loss import validation_function, OrdinalRegressionLoss
+from loss import validation_function, soft_rank_loss
 
 # シードの設定を行う関数
 def seed_everything(seed):
@@ -107,8 +107,6 @@ def train(opt):
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if rankloss=='false':
             criterion = nn.MSELoss()
-        else:
-            criterion = OrdinalRegressionLoss(num_classes=101, device=device)
 
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
     elif learningmethod=='convlstm':
@@ -117,8 +115,7 @@ def train(opt):
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if rankloss=='false':
             criterion = nn.MSELoss()
-        else:
-            criterion = OrdinalRegressionLoss(num_classes=101, device=device)
+
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
     elif learningmethod=='vivit':
         # vivitの設定
@@ -126,16 +123,14 @@ def train(opt):
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if rankloss=='false':
             criterion = nn.MSELoss()
-        else:
-            criterion = OrdinalRegressionLoss(num_classes=101, device=device)
+
     # MoEを導入したネットワークの呼び出し
     elif learningmethod=='moeconv3d':
         model = MixtureOfExperts(3, 3, 20, 100, 56, 56, 5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if rankloss=='false':
             criterion = nn.MSELoss()
-        else:
-            criterion = OrdinalRegressionLoss(num_classes=101, device=device)
+
     elif learningmethod=='convlstmwithdcn':
         # DCNConvLSTM_FCの設定
         # model =  DCNConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
@@ -200,8 +195,10 @@ def train(opt):
 
             # モデルの適用
             outputs = model(inputs)
-
-            loss = criterion(outputs, labels)
+            if rankloss=='true':
+                loss = soft_rank_loss(outputs, labels)
+            else:
+                loss = criterion(outputs, labels)
 
             loss.backward()
             optimizer.step()
@@ -230,7 +227,10 @@ def train(opt):
                 outputs = model(inputs)
 
                 # val_lossにはランキングロス or 平均二乗誤差
-                val_loss += criterion(outputs, labels).item()
+                if rankloss=='true':
+                    val_loss += soft_rank_loss(outputs, labels).item()
+                else:
+                    val_loss += criterion(outputs, labels).item()
                 # val_spearmanにはスピアマンの相関順位係数が入る
                 val_spearman += validation_function(outputs, labels)
                 
@@ -242,7 +242,7 @@ def train(opt):
         val_spearman = val_spearman.detach().numpy()
         val_spearmans.append(val_spearman)
 
-        print(f'Epoch {epoch+1}, Training loss: {train_loss:.4f}, Validation loss: {val_loss:.4f}, Another loss: {val_spearman:.4f}')
+        print(f'Epoch {epoch+1}, Training loss: {train_loss:.4f}, Validation loss: {val_loss:.4f}, Spearman loss: {val_spearman:.4f}')
         sys.stdout.flush()
 
         # メモリーを最適化する
@@ -271,7 +271,6 @@ def train(opt):
 
     # 一つ目のグラフ
     plt.subplot(1, 2, 1)
-    # plt.ylim([0, 10])
     plt.plot(train_losses, label='Training loss')
     plt.plot(val_losses, label='Validation loss')
     plt.xlabel('Epochs')
@@ -285,15 +284,11 @@ def train(opt):
 
     # 二つ目のグラフ
     plt.subplot(1, 2, 2)
-    # もし学習にランキングロスを使った場合はMSE lossを表示
-    if rankloss=='true':
-        plt.plot(val_spearmans, label='MSE Validation loss')
-    else: # もし学習にMSE lossを使った場合はRank lossを表示
-        plt.plot(val_spearmans, label='Rank Validation loss')
+    plt.plot(val_spearmans, label='Spearmans Validation loss')
     plt.xlabel('Epochs')
-    plt.ylabel('Custom Loss')
+    plt.ylabel('Spearman Loss')
     plt.legend()
-    plt.title("Another Validation Loss")
+    plt.title("Spearman Validation Loss")
     plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.png')
 
     return train_loss, val_loss_min

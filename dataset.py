@@ -43,7 +43,7 @@ class VideoDataset(Dataset):
         triming_param = 300
         # 動画のパス
         file_path = self.addpath + '/' + self.file_list[idx]
-        print(file_path)
+        # print(file_path)
         # フレームを格納する配列
         frames = []
         # ビデオキャプチャー
