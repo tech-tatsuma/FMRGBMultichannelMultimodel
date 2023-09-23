@@ -251,7 +251,7 @@ def train(opt):
 
         # バリデーションロスが下がった時は結果を保存する
         if val_loss_min is None or val_loss < val_loss_min:
-            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}intweak.pt'
+            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{rankloss}intweak.pt'
             torch.save(model.state_dict(), model_save_name)
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
@@ -328,7 +328,7 @@ if __name__=='__main__':
 
     # 学習率の探索を行う場合
     elif opt.islearnrate_search == 'true':
-        learning_rates = [0.001, 0.002, 0.003, 0.004]
+        learning_rates = [0.0001, 0.00001, 0.001]
         best_loss = float('inf')
         best_lr = 0
         for lr in learning_rates:
