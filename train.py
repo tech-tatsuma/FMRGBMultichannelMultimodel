@@ -17,6 +17,7 @@ import sys
 import datetime
 import random
 from loss import validation_function, soft_rank_loss
+from setproctitle import setproctitle
 
 # シードの設定を行う関数
 def seed_everything(seed):
@@ -251,7 +252,7 @@ def train(opt):
 
         # バリデーションロスが下がった時は結果を保存する
         if val_loss_min is None or val_loss < val_loss_min:
-            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{rankloss}intweak.pt'
+            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{rankloss}intweak2.pt'
             torch.save(model.state_dict(), model_save_name)
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
@@ -289,11 +290,12 @@ def train(opt):
     plt.ylabel('Spearman Loss')
     plt.legend()
     plt.title("Spearman Validation Loss")
-    plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}.png')
+    plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}_rankloss{rankloss}2.png')
 
     return train_loss, val_loss_min
 
 if __name__=='__main__':
+    setproctitle("King_Tatsuma")
 
     # プログラムの動きだす時間を取得
     start_time = datetime.datetime.now()
@@ -328,7 +330,7 @@ if __name__=='__main__':
 
     # 学習率の探索を行う場合
     elif opt.islearnrate_search == 'true':
-        learning_rates = [0.0001, 0.00001, 0.001]
+        learning_rates = [0.0001, 0.00001, 0.001, 0.01]
         best_loss = float('inf')
         best_lr = 0
         for lr in learning_rates:

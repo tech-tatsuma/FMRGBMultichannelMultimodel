@@ -8,3 +8,4 @@ matplotlib==3.7.1
 pandas==2.0.2
 einops==0.3.2
 torchinfo
+setproctitle
