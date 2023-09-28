@@ -10,7 +10,7 @@ import csv
 class VideoDataset(Dataset):
 
     # 初期化関数
-    def __init__(self, csv_file, transform=None, target_frames=100, target_size=(224, 224), mean=None, std=None, addpath=''):
+    def __init__(self, csv_file, transform=None, target_frames=500, target_size=(224, 224), mean=None, std=None, addpath=''):
         # それぞれの変数に値を設定
         self.transform = transform
         self.target_frames = target_frames
@@ -40,7 +40,7 @@ class VideoDataset(Dataset):
     # データセットを取得する関数
     def __getitem__(self, idx):
 
-        triming_param = 300
+        triming_param = 1500
         # 動画のパス
         file_path = self.addpath + '/' + self.file_list[idx]
         # print(file_path)
