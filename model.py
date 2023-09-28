@@ -7,7 +7,7 @@ from previvitmodel import Attention, PreNorm, FeedForward
 import torch.nn as nn
 # from .ops_dcnv3.modules.dcnv3 import DCNv3
 
-# 3dcnn
+# Simple 3DCNN
 class ConvNet3D(nn.Module):
     def __init__(self, in_channels=3, num_tasks=5, batch_size=20, depth=1500, height=56, width=56):
         super(ConvNet3D, self).__init__()
@@ -66,6 +66,159 @@ class ConvNet3D(nn.Module):
         
         return outputs
 
+# SlowFast(3DCNN)
+class SlowFastConvNet3D(nn.Module):
+    def __init__(self, in_channels=3, num_tasks=5, batch_size=20, depth=1500, height=56, width=56):
+        super(SlowFastConvNet3D, self).__init__()
+
+        # Slow Pathway
+        self.slow_conv = nn.Sequential(
+            nn.Conv3d(in_channels, 32, kernel_size=3, stride=(1, 2, 2), padding=1),
+            nn.BatchNorm3d(32),
+            nn.ReLU(),
+            nn.MaxPool3d(2),
+        )
+
+        # Fast Pathway
+        self.fast_conv = nn.Sequential(
+            nn.Conv3d(in_channels, 32, kernel_size=3, stride=(8, 2, 2), padding=1),
+            nn.BatchNorm3d(32),
+            nn.ReLU(),
+            nn.MaxPool3d(2),
+        )
+
+        # 全結合層への入力次元を計算する
+        self._to_linear_slow = None
+        self._to_linear_fast = None
+
+        # 入力と同じ形式のダミーデータを作成する（次元の計算用）
+        # x_slow = torch.randn(batch_size, in_channels, depth, height, width)
+        # x_fast = torch.randn(batch_size, in_channels, depth//8, height, width)
+        # 元の入力データ
+        x_original = torch.randn(batch_size, in_channels, depth, height, width)
+
+        # 入力と同じ形式のダミーデータを作成する（次元の計算用）
+        x_slow = x_original[:,:,::16,:,:]
+        x_fast = x_original[:,:,::2,:,:]    
+        self.convs(x_slow, x_fast)
+
+        # 全結合層
+        self.shared_fc = nn.Sequential(
+            nn.Linear(self._to_linear_slow + self._to_linear_fast, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(0.25),
+            nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            nn.Dropout(0.25),
+        )
+
+        # マルチタスクに対応させるための層
+        self.task_fcs = nn.ModuleList([nn.Linear(64, 1) for _ in range(num_tasks)])
+
+    def convs(self, x_slow, x_fast):
+        x_slow = self.slow_conv(x_slow)
+        x_fast = self.fast_conv(x_fast)
+
+        # 次の全結合層に入力するための次元を計算する
+        if self._to_linear_slow is None:
+            self._to_linear_slow = torch.prod(torch.tensor(x_slow.shape[1:]))
+        if self._to_linear_fast is None:
+            self._to_linear_fast = torch.prod(torch.tensor(x_fast.shape[1:]))
+        return x_slow, x_fast
+
+    def forward(self, x):
+        # Separate the input tensor into slow and fast components
+        x_slow = x[:,:,::16,:,:]
+        x_fast = x[:,:,::2,:,:]
+        x_slow, x_fast = self.convs(x_slow, x_fast)
+
+        # Concatenate Slow and Fast pathways
+        x = torch.cat((x_slow.view(-1, self._to_linear_slow), x_fast.view(-1, self._to_linear_fast)), dim=1)
+
+        x = self.shared_fc(x)
+
+        # Compute task-specific outputs
+        outputs = [task_fc(x) for task_fc in self.task_fcs]
+
+        # 最後はテンソルに直して関数の出力とする
+        outputs = torch.cat(outputs, dim=1)
+
+        return outputs
+
+# SlowFast(MoE)gate network
+class SlowFastMoEConvNet3D(nn.Module):
+    def __init__(self, in_channels, batch_size, depth, height, width):
+        super(SlowFastMoEConvNet3D, self).__init__()
+        
+        # Slow Pathway
+        self.slow_conv = nn.Sequential(
+            nn.Conv3d(in_channels, 32, kernel_size=3, stride=(1, 2, 2), padding=1),
+            nn.BatchNorm3d(32),
+            nn.ReLU(),
+            nn.MaxPool3d(2),
+        )
+
+        # Fast Pathway
+        self.fast_conv = nn.Sequential(
+            nn.Conv3d(in_channels, 32, kernel_size=3, stride=(8, 2, 2), padding=1),
+            nn.BatchNorm3d(32),
+            nn.ReLU(),
+            nn.MaxPool3d(2),
+        )
+        
+        self._to_linear_slow = None
+        self._to_linear_fast = None
+        x_original = torch.randn(batch_size, in_channels, depth, height, width)
+
+        # 入力と同じ形式のダミーデータを作成する（次元の計算用）
+        x_slow = x_original[:,:,::16,:,:]
+        x_fast = x_original[:,:,::2,:,:]    
+        self.convs(x_slow, x_fast)
+        
+        self.fc = nn.Linear(self._to_linear_slow + self._to_linear_fast, 64)
+    
+    def convs(self, x_slow, x_fast):
+        x_slow = self.slow_conv(x_slow)
+        x_fast = self.fast_conv(x_fast)
+        if self._to_linear_slow is None:
+            self._to_linear_slow = torch.prod(torch.tensor(x_slow.shape[1:]))
+        if self._to_linear_fast is None:
+            self._to_linear_fast = torch.prod(torch.tensor(x_fast.shape[1:]))
+        return x_slow, x_fast
+    
+    def forward(self, x):
+        x_slow = x[:,:,::16,:,:]
+        x_fast = x[:,:,::2,:,:]
+        x_slow, x_fast = self.convs(x_slow, x_fast)
+        x = torch.cat((x_slow.view(-1, self._to_linear_slow), x_fast.view(-1, self._to_linear_fast)), dim=1)
+        x = self.fc(x)
+        return x
+
+# SlowFast(MoE)expert network
+class SlowFastMixtureOfExperts(nn.Module):
+    def __init__(self, in_channels, num_experts, batch_size, depth, height, width, num_tasks):
+        super(SlowFastMixtureOfExperts, self).__init__()
+        self.experts = nn.ModuleList([SlowFastMoEConvNet3D(in_channels, batch_size, depth, height, width) for _ in range(num_experts)])
+        self.gate = SlowFastMoEConvNet3D(in_channels, batch_size, depth, height, width)
+
+        # Task-specific layers
+        self.task_fcs = nn.ModuleList([nn.Linear(64, 1) for _ in range(num_tasks)])
+
+    def forward(self, x):
+        gate_output = f.softmax(self.gate(x), dim=1)
+        expert_outputs = [expert(x) for expert in self.experts]
+
+        final_output = 0
+        for i, expert_output in enumerate(expert_outputs):
+            weighted_output = gate_output[:, i].view(-1, 1) * expert_output
+            final_output += weighted_output
+
+        outputs = [task_fc(final_output) for task_fc in self.task_fcs]
+        outputs = torch.cat(outputs, dim=1)
+        return outputs
+    
 # 混合エキスパートを導入したconv3dネットワーク
 class MoEConvNet3D(nn.Module):
     def __init__(self, in_channels, batch_size, depth, height, width):
@@ -185,16 +338,18 @@ class ConvLSTM_FC(ConvLSTM):
     def __init__(self, num_tasks=5, *args, **kwargs):
         super(ConvLSTM_FC, self).__init__(*args, **kwargs)
         self.num_tasks = num_tasks
+
+        _, last_hidden_dim, _, _, _ = self.cell_list[-1].conv.weight.shape
         self.attention = nn.Sequential(
-            nn.Conv2d(32, 1, kernel_size=1),
+            nn.Conv2d(last_hidden_dim, 1, kernel_size=1),
             nn.Sigmoid()
         )
         
-        self.dropout1 = nn.Dropout(0.5)
-        self.dropout2 = nn.Dropout(0.5)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.25)
         
         self.shared_fc = nn.Sequential(
-            nn.Linear(32, 128),
+            nn.Linear(last_hidden_dim, 128),
             nn.ReLU(),
             self.dropout1,
             nn.Linear(128, 32),
@@ -301,6 +456,9 @@ class ViViT(nn.Module):
 
 class MultiTaskViViT(ViViT):
     def __init__(self, num_tasks=5, *args, **kwargs):
+
+        self.dim = kwargs.get('dim', 192)
+
         super(MultiTaskViViT, self).__init__(*args, **kwargs)
         self.num_tasks = num_tasks
 

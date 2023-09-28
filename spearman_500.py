@@ -9,6 +9,7 @@ import numpy as np
 from torch import nn
 import os
 from loss import validation_function
+from setproctitle import setproctitle
 
 # シードの設定を行う関数
 def seed_everything(seed):
@@ -41,14 +42,20 @@ def calculate_approximate_mean_and_std(dataset, num_samples=1000, num_frames=10)
     std /= num_samples
     return mean, std
 
+# プロセスに名前をつける
+setproctitle("spearman_test2")
+
+# モデルの指定
 model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=100, height=56, width=56)
 # model = MixtureOfExperts(3, 3, 20, 100, 56, 56, 5)
-model = nn.DataParallel(model)
+
 # モデルのロード
-# model_pathには保存されたモデルのパスを指定してください。
-model_path = "path_to_your_saved_model.pth"
+model_path = "conv3d_lr0.01_ep100_pa10ranklossfalseintweak.pt"
+
 # CPUでモデルをロード
 model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+
+# model = nn.DataParallel(model)
 model.eval()
 
 # データの前処理
@@ -58,7 +65,7 @@ transform = transforms.Compose([
 ])
 
 # データセットのロード
-# data_fileにはデータセットのパスを指定してください。
+# 以下はtrainの時と同じことを行う
 data_file = "/data2/furuya/gaodatasets/combined1-140_modified.csv"
 full_dataset1 = VideoDataset(csv_file=data_file, transform=transform, addpath = os.path.dirname(data_file))
 
@@ -72,15 +79,13 @@ full_dataset2 = VideoDataset(csv_file=data_file, transform=transform, mean=mean,
 # データローダの作成
 train_dataset, val_dataset = random_split(full_dataset2, [len(full_dataset2) - 500, 500])
 
+# 500個のデータローダを作成
 val_loader = DataLoader(val_dataset, batch_size=500, shuffle=False)
 
 # val_spearmanの計算
 val_spearman = 0.0
 with torch.no_grad():
     for inputs, labels in val_loader:
-        
-        # データはすでにCPU上にあるため、転送の処理は不要
-        # inputs, labels = inputs.to(device), labels.to(device)
         
         if inputs.dtype != torch.float32:
             inputs = inputs.float()

@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, MixtureOfExperts
+from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, MixtureOfExperts, SlowFastConvNet3D, SlowFastMixtureOfExperts
 import torch
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import transforms
@@ -104,7 +104,7 @@ def train(opt):
     # モデルの選択
     if learningmethod=='conv3d':
         # conv3dモデルの設定
-        model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=100, height=56, width=56).to(device)
+        model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if rankloss=='false':
             criterion = nn.MSELoss()
@@ -120,14 +120,14 @@ def train(opt):
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
     elif learningmethod=='vivit':
         # vivitの設定
-        model = MultiTaskViViT(image_size=56, patch_size=4, num_classes=1, num_frames=100, dim=192, depth=4, heads=3, num_tasks=5).to(device)
+        model = MultiTaskViViT(image_size=56, patch_size=4, num_classes=1, num_frames=500, dim=192, depth=4, heads=3, num_tasks=5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if rankloss=='false':
             criterion = nn.MSELoss()
 
     # MoEを導入したネットワークの呼び出し
     elif learningmethod=='moeconv3d':
-        model = MixtureOfExperts(3, 3, 20, 100, 56, 56, 5).to(device)
+        model = MixtureOfExperts(3, 3, 20, 500, 56, 56, 5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if rankloss=='false':
             criterion = nn.MSELoss()
@@ -137,6 +137,14 @@ def train(opt):
         # model =  DCNConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
         # criterion = nn.MSELoss()
         print('まだ実装が完了していません。別のオプションで実行してください。')
+    elif learningmethod=='slowfast':
+        model = SlowFastConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
+        if rankloss=='false':
+            criterion = nn.MSELoss()
+    elif learningmethod=='slowfastmoe':
+        model = SlowFastMixtureOfExperts(3, 3, 20, 500, 56, 56, 5).to(device)
+        if rankloss=='false':
+            criterion = nn.MSELoss()
     else:
         # 入力が不適切だった時の処理
         print('error: inappropriate input(learning method)')
@@ -254,7 +262,7 @@ def train(opt):
 
         # バリデーションロスが下がった時は結果を保存する
         if val_loss_min is None or val_loss < val_loss_min:
-            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{rankloss}intweak3.pt'
+            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{rankloss}intweak2.pt'
             torch.save(model.state_dict(), model_save_name)
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
@@ -292,11 +300,12 @@ def train(opt):
     plt.ylabel('Spearman Loss')
     plt.legend()
     plt.title("Spearman Validation Loss")
-    plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{rankloss}3.png')
+    plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}_rankloss{rankloss}2.png')
 
     return train_loss, val_loss_min
 
 if __name__=='__main__':
+    setproctitle("King_Tatsuma")
     setproctitle("King_Tatsuma")
 
     # プログラムの動きだす時間を取得
@@ -332,6 +341,7 @@ if __name__=='__main__':
 
     # 学習率の探索を行う場合
     elif opt.islearnrate_search == 'true':
+        learning_rates = [0.0001, 0.00001, 0.001, 0.01]
         learning_rates = [0.0001, 0.00001, 0.001, 0.01]
         best_loss = float('inf')
         best_lr = 0
