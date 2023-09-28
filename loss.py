@@ -30,18 +30,38 @@ def validation_function(y_pred, y_true):
     
     return rank_loss
 
-def soft_rank_loss(y_pred, y_true, tau=1.0):
-    # 各データポイントに対して予測値の合計を計算
-    pred_scores = y_pred.sum(dim=1).view(-1, 1)
-    true_scores = y_true.sum(dim=1).view(-1, 1)
-    
-    # SoftRankの計算
-    pred_diffs = pred_scores - pred_scores.t()
-    true_diffs = true_scores - true_scores.t()
+def soft_rank_loss(y_pred, y_true, tau=0.01):
+    # 各データポイントに対して、各予測値および真の値の差を計算
+    pred_diffs = y_pred.unsqueeze(2) - y_pred.unsqueeze(1)
+    true_diffs = y_true.unsqueeze(2) - y_true.unsqueeze(1)
     
     # Sigmoid関数を使ってsoft順位を計算
-    pred_order_probs = torch.sigmoid(-pred_diffs / tau)
-    true_order_probs = torch.sigmoid(-true_diffs / tau)
+    # pred_order_probs = torch.sigmoid(-pred_diffs / tau)
+    pred_order_probs = torch.tanh(-pred_diffs / tau)
+    # true_order_probs = torch.sigmoid(-true_diffs / tau)
+    true_order_probs = torch.tanh(-true_diffs / tau)
+
+    # 各データポイントごとに順位の差に基づく損失の計算
+    losses = (pred_order_probs - true_order_probs).pow(2)
     
-    # 順位の差に基づく損失の計算
-    return torch.mean((pred_order_probs - true_order_probs).pow(2))
+    # 各データポイントの損失の平均を計算し、その後の損失を計算
+    return losses.mean(dim=[1,2]).mean()
+
+def soft_rank(y):
+    """
+    Compute the soft rank of y using the softmax function.
+    """
+    return F.softmax(y, dim=-1) * torch.arange(1, y.size(-1) + 1, device=y.device)
+
+def spearman_rank_loss(y_pred, y_true):
+    # Compute soft ranks
+    true_ranks = soft_rank(y_true)
+    pred_ranks = soft_rank(y_pred)
+    
+    # Compute the rank differences squared
+    rank_diffs_squared = (true_ranks - pred_ranks).pow(2)
+    
+    # Average the rank differences squared to get the loss
+    loss = rank_diffs_squared.mean()
+    
+    return loss
