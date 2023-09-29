@@ -10,8 +10,8 @@ import scipy.stats
 def spearman_rank_correlation(truth, pred):
 
     # truthとpredをNumPy配列に変換
-    truth = truth.numpy()
-    pred = pred.numpy()
+    truth = truth.cpu().numpy()
+    pred = pred.cpu().numpy()
     
     # truthとpredをNumPy配列に変換
     sum_truth = np.sum(truth, axis=1)
@@ -43,7 +43,7 @@ def validation_function(y_pred, y_true):
     
     return rank_loss
 
-def soft_rank_loss(y_pred, y_true, tau=1):
+def soft_rank_loss(y_pred, y_true, tau=0.1):
     # 各データポイントに対して、各予測値および真の値の差を計算
     pred_diffs = y_pred.unsqueeze(2) - y_pred.unsqueeze(1)
     true_diffs = y_true.unsqueeze(2) - y_true.unsqueeze(1)

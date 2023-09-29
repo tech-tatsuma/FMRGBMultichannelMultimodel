@@ -339,7 +339,7 @@ class ConvLSTM_FC(ConvLSTM):
         super(ConvLSTM_FC, self).__init__(*args, **kwargs)
         self.num_tasks = num_tasks
 
-        _, last_hidden_dim, _, _, _ = self.cell_list[-1].conv.weight.shape
+        _, last_hidden_dim, _, _ = self.cell_list[-1].conv.weight.shape
         self.attention = nn.Sequential(
             nn.Conv2d(last_hidden_dim, 1, kernel_size=1),
             nn.Sigmoid()
@@ -471,7 +471,7 @@ class MultiTaskViViT(ViViT):
         self.task_fcs = nn.ModuleList([nn.Linear(self.dim, 1) for _ in range(num_tasks)])
 
     def forward(self, x):
-        x = super(ViViT, self).forward(x)  # Run the forward pass of the original ViViT model until the pooling layer
+        x = super(MultiTaskViViT, self).forward(x)  # Run the forward pass of the original ViViT model until the pooling layer
         
         shared_output = self.shared_mlp_head(x)  # Use the shared layers
 
