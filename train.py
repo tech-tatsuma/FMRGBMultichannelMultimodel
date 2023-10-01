@@ -98,8 +98,8 @@ def train(opt):
     '''
 
     # データローダの取得
-    train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=100, shuffle=False)
 
     # モデルの選択
     if learningmethod=='conv3d':
@@ -138,7 +138,7 @@ def train(opt):
         # criterion = nn.MSELoss()
         print('まだ実装が完了していません。別のオプションで実行してください。')
     elif learningmethod=='slowfast':
-        model = SlowFastConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
+        model = SlowFastConvNet3D(in_channels=3, num_tasks=5, batch_size=100, depth=500, height=56, width=56).to(device)
         if rankloss=='false':
             criterion = nn.MSELoss()
     elif learningmethod=='slowfastmoe':
