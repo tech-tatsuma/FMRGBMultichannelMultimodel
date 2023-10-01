@@ -10,8 +10,8 @@ import scipy.stats
 def spearman_rank_correlation(truth, pred):
 
     # truthとpredをNumPy配列に変換
-    truth = truth.numpy()
-    pred = pred.numpy()
+    truth = truth.cpu().numpy()
+    pred = pred.cpu().numpy()
     
     # truthとpredをNumPy配列に変換
     sum_truth = np.sum(truth, axis=1)
@@ -43,7 +43,7 @@ def validation_function(y_pred, y_true):
     
     return rank_loss
 
-def soft_rank_loss(y_pred, y_true, tau=1):
+def soft_rank_loss(y_pred, y_true, tau=0.1):
     # 各データポイントに対して、各予測値および真の値の差を計算
     pred_diffs = y_pred.unsqueeze(2) - y_pred.unsqueeze(1)
     true_diffs = y_true.unsqueeze(2) - y_true.unsqueeze(1)
@@ -55,3 +55,35 @@ def soft_rank_loss(y_pred, y_true, tau=1):
     # 順位の差に基づく損失の計算
     return torch.mean((pred_order_probs - true_order_probs).pow(2))
 
+def softargmax(scores, beta=10):
+    """ソフトな順位を計算する関数"""
+    prob = F.softmax(beta * scores, dim=-1)
+    positions = torch.arange(scores.size(-1), dtype=torch.float32, device=scores.device)
+    soft_positions = torch.sum(prob * positions, dim=-1)
+    return soft_positions
+
+def rank_loss(pred, true):
+    # ソフトランク関数を利用する
+    pred_rank = softargmax(pred)
+    true_rank = softargmax(true)
+
+    # ランクの違いを計算する
+    rank_diff = pred_rank - true_rank
+    loss = (rank_diff ** 2).mean()
+
+    return loss
+
+def pairwise_ranking_loss(pred, true):
+    # 形を変化させる
+    pred = pred.view(-1, 1)
+    true = true.view(-1, 1)
+    
+    # Create a matrix of pairwise differences for pred and true
+    pred_diffs = pred - pred.t()
+    true_diffs = true - true.t()
+
+    # Create a mask for pairs where true[i] > true[j]
+    mask = true_diffs > 0
+
+    loss = F.binary_cross_entropy_with_logits(pred_diffs, mask.float(), reduction='none')
+    return loss.mean()
