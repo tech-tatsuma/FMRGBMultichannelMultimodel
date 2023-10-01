@@ -74,16 +74,23 @@ def rank_loss(pred, true):
     return loss
 
 def pairwise_ranking_loss(pred, true):
-    # 形を変化させる
-    pred = pred.view(-1, 1)
-    true = true.view(-1, 1)
-    
-    # Create a matrix of pairwise differences for pred and true
-    pred_diffs = pred - pred.t()
-    true_diffs = true - true.t()
+    # 各バッチでのロスを格納するためのリスト
+    batch_losses = []
 
-    # Create a mask for pairs where true[i] > true[j]
-    mask = true_diffs > 0
+    # 各サンプルごとにペアワイズランキングロスを計算
+    for i in range(pred.shape[0]):
+        pred_i = pred[i].view(-1, 1)
+        true_i = true[i].view(-1, 1)
 
-    loss = F.binary_cross_entropy_with_logits(pred_diffs, mask.float(), reduction='none')
-    return loss.mean()
+        # Create a matrix of pairwise differences for pred_i and true_i
+        pred_diffs = pred_i - pred_i.t()
+        true_diffs = true_i - true_i.t()
+
+        # Create a mask for pairs where true_i[j] > true_i[k]
+        mask = (true_diffs > 0).float()
+
+        loss = F.binary_cross_entropy_with_logits(pred_diffs, mask, reduction='none')
+        batch_losses.append(loss.mean())
+
+    # すべてのサンプルの平均ロスを計算
+    return torch.stack(batch_losses).mean()
