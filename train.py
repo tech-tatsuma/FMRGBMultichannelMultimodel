@@ -16,7 +16,7 @@ from torchinfo import summary
 import sys
 import datetime
 import random
-from loss import validation_function, soft_rank_loss
+from loss import validation_function, soft_rank_loss, pairwise_ranking_loss
 from setproctitle import setproctitle
 
 # シードの設定を行う関数
@@ -67,7 +67,7 @@ def train(opt):
     learningmethod = opt.learnmethod
     learning_rate = opt.lr
     usescheduler = opt.usescheduler
-    rankloss = opt.rankloss
+    lossfunction = opt.loss
 
     addpath = os.path.dirname(data_file)
 
@@ -106,7 +106,7 @@ def train(opt):
         # conv3dモデルの設定
         model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
-        if rankloss=='false':
+        if lossfunction=='mse':
             criterion = nn.MSELoss()
 
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
@@ -114,7 +114,7 @@ def train(opt):
         # convlstmの設定
         model = ConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3, 3), num_layers=3, num_tasks=5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
-        if rankloss=='false':
+        if lossfunction=='mse':
             criterion = nn.MSELoss()
 
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
@@ -122,14 +122,14 @@ def train(opt):
         # vivitの設定
         model = MultiTaskViViT(image_size=56, patch_size=4, num_classes=1, num_frames=500, dim=192, depth=4, heads=3, num_tasks=5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
-        if rankloss=='false':
+        if lossfunction=='mse':
             criterion = nn.MSELoss()
 
     # MoEを導入したネットワークの呼び出し
     elif learningmethod=='moeconv3d':
         model = MixtureOfExperts(3, 3, 20, 500, 56, 56, 5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
-        if rankloss=='false':
+        if lossfunction=='mse':
             criterion = nn.MSELoss()
 
     elif learningmethod=='convlstmwithdcn':
@@ -139,11 +139,11 @@ def train(opt):
         print('まだ実装が完了していません。別のオプションで実行してください。')
     elif learningmethod=='slowfast':
         model = SlowFastConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
-        if rankloss=='false':
+        if lossfunction=='mse':
             criterion = nn.MSELoss()
     elif learningmethod=='slowfastmoe':
         model = SlowFastMixtureOfExperts(3, 3, 20, 500, 56, 56, 5).to(device)
-        if rankloss=='false':
+        if lossfunction=='mse':
             criterion = nn.MSELoss()
     else:
         # 入力が不適切だった時の処理
@@ -204,10 +204,15 @@ def train(opt):
 
             # モデルの適用
             outputs = model(inputs)
-            if rankloss=='true':
+            if lossfunction=='mse':
+                loss = criterion(outputs, labels)
+            elif lossfunction=='pair':
+                loss = pairwise_ranking_loss(outputs, labels)
+            elif lossfunction=='softrank':
                 loss = soft_rank_loss(outputs, labels)
             else:
-                loss = criterion(outputs, labels)
+                print('不適切な損失関数の設定')
+                return
 
             loss.backward()
             optimizer.step()
@@ -236,10 +241,12 @@ def train(opt):
                 outputs = model(inputs)
 
                 # val_lossにはランキングロス or 平均二乗誤差
-                if rankloss=='true':
+                if lossfunction=='softrank':
                     val_loss += soft_rank_loss(outputs, labels).item()
-                else:
+                elif lossfunction=='mse':
                     val_loss += criterion(outputs, labels).item()
+                elif lossfunction=='pair':
+                    loss = pairwise_ranking_loss(outputs, labels).item()
                 # val_spearmanにはスピアマンの相関順位係数が入る
                 val_spearman += validation_function(outputs, labels)
                 
@@ -286,7 +293,7 @@ def train(opt):
     plt.ylabel('Loss')
     plt.legend()
     # もし学習にRank lossを使った場合はそれを表示
-    if rankloss=='true':
+    if lossfunction=='softrank' or lossfunction=='pair':
         plt.title("Training and Validation Rank Loss")
     else: # 学習にMSE lossを使った場合
         plt.title("Training and Validation MSE Loss")
@@ -298,7 +305,7 @@ def train(opt):
     plt.ylabel('Spearman Loss')
     plt.legend()
     plt.title("Spearman Validation Loss")
-    plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}_rankloss{rankloss}2.png')
+    plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}_rankloss{lossfunction}.png')
 
     return train_loss, val_loss_min
 
@@ -317,11 +324,11 @@ if __name__=='__main__':
     parser.add_argument('--lr',type=float, default=0.001, help='learning rate')
     parser.add_argument('--train_size', type=float, default=0.2, help='testdata_ratio')
     parser.add_argument('--patience', type=int, default=5, help='patience')
-    parser.add_argument('--rankloss',type=str, default='false',help='use use ranking loss?')
     parser.add_argument('--learnmethod', type=str, default='conv3d', help='conv3d or convlstm or vivit')
     parser.add_argument('--islearnrate_search', type=str, default='false', help='is learningrate search ?')
     parser.add_argument('--usescheduler', type=str, default='false', help='use lr scheduler true or false')
     parser.add_argument('--seed', type=int, default=42, help='Seed for random number generators')
+    parser.add_argument('--loss', type=str, default='mse', help='choose loss function')
     opt = parser.parse_args()
     # オプションを標準出力する
     print(opt)
