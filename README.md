@@ -1,4 +1,4 @@
-# FMRGBMultichannelMultimodel(Multi task Regression Problem Version)
+# GAOMultichannelMultimodel(Multi task Regression Problem Version)
 This program is designed for machine learning of data comprising sound, optical flow and visual information.
 
 ## Usage
@@ -19,13 +19,14 @@ https://github.com/kyutech-tatsuma/robustvideomatting.git
 ```
 python visualize.py --target <pt>
 ```
-### FMRGB multi-channel model training.
+### GAO multi-channel model training.
 ```
-python train.py --data <csv> --epochs <epochs> --train_size <rate of traindata> --patience <early stopping parameter> --lr <learning rate> --rankloss <use ranking loss?> --learnmethod <conv3d convlstm vivit> --islearnrate_search <search learning rate?> --usescheduler <use lr scheduler?> --seed <value of seed>
+python train.py --data <csv> --epochs <epochs> --train_size <ratio of traindata> --patience <early stopping parameter> --lr <learning rate> --loss <mse|softrank|pair> --learnmethod <conv3d|convlstm|vivit|moeconv3d|slowfast|slowfastmoe> --islearnrate_search <search learning rate?> --usescheduler <use lr scheduler?> --seed <value of seed>
 ```
 ##  Explanation of the program
 ### Imaging of audio data
 <strong>SIMPLE SPECTROGRAM</strong>
+(not recommended)
 
 1. Calculation of the STFT (Short Time Fourier Transform)：The librosa.stft(audio_samples) function is used to perform a short-time Fourier transform. It divides the audio signal into small chunks (frames) and applies the Fourier transform to each frame to produce a complex result.
 
