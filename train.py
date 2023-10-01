@@ -98,8 +98,8 @@ def train(opt):
     '''
 
     # データローダの取得
-    train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=100, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=50, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=50, shuffle=False)
 
     # モデルの選択
     if learningmethod=='conv3d':
@@ -127,7 +127,7 @@ def train(opt):
 
     # MoEを導入したネットワークの呼び出し
     elif learningmethod=='moeconv3d':
-        model = MixtureOfExperts(3, 3, 20, 500, 56, 56, 5).to(device)
+        model = MixtureOfExperts(3, 5, 50, 300, 28, 28, 5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if lossfunction=='mse':
             criterion = nn.MSELoss()
@@ -267,7 +267,7 @@ def train(opt):
 
         # バリデーションロスが下がった時は結果を保存する
         if val_loss_min is None or val_loss < val_loss_min:
-            model_save_name = f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{rankloss}intweak2.pt'
+            model_save_name = f'./latestresult/{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{lossfunction}intweak.pt'
             torch.save(model.state_dict(), model_save_name)
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
@@ -305,13 +305,12 @@ def train(opt):
     plt.ylabel('Spearman Loss')
     plt.legend()
     plt.title("Spearman Validation Loss")
-    plt.savefig(f'{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}_rankloss{lossfunction}.png')
+    plt.savefig(f'./latestgraph/{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}_rankloss{lossfunction}.png')
 
     return train_loss, val_loss_min
 
 if __name__=='__main__':
-    setproctitle("King_Tatsuma")
-    setproctitle("King_Tatsuma")
+    setproctitle("pairwise")
 
     # プログラムの動きだす時間を取得
     start_time = datetime.datetime.now()

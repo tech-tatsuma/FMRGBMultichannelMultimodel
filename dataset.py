@@ -10,7 +10,7 @@ import csv
 class VideoDataset(Dataset):
 
     # 初期化関数
-    def __init__(self, csv_file, transform=None, target_frames=500, target_size=(224, 224), mean=None, std=None, addpath=''):
+    def __init__(self, csv_file, transform=None, target_frames=300, target_size=(28, 28), mean=None, std=None, addpath=''):
         # それぞれの変数に値を設定
         self.transform = transform
         self.target_frames = target_frames
@@ -40,7 +40,7 @@ class VideoDataset(Dataset):
     # データセットを取得する関数
     def __getitem__(self, idx):
 
-        triming_param = 1500
+        triming_param = 900
         # 動画のパス
         file_path = self.addpath + '/' + self.file_list[idx]
         # print(file_path)
@@ -58,6 +58,7 @@ class VideoDataset(Dataset):
             # 10秒間でデータをトリミングする
             if counter > triming_param:
                 break
+            frame = cv2.resize(frame, self.target_size)
             frame = Image.fromarray(frame)
             if self.transform:
                 frame = self.transform(frame)
@@ -89,7 +90,5 @@ class VideoDataset(Dataset):
         tensor = tensor.permute(1, 0, 2, 3)  # (C, T, H, W)
         label = self.labels[idx]
         label = torch.tensor(label, dtype=torch.float32)
-
-        # print("Shape of tensor from dataset:", tensor.shape)
 
         return tensor, label
