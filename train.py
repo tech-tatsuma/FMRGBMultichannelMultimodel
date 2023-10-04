@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, MixtureOfExperts, SlowFastConvNet3D, SlowFastMixtureOfExperts
+from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, MixtureOfExperts, SlowFastConvNet3D, SlowFastMixtureOfExperts, MultiTaskMultiChannelModel
 import torch
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import transforms
@@ -73,7 +73,7 @@ def train(opt):
 
     # データの前処理
     transform = transforms.Compose([
-        transforms.Resize((56, 56)), 
+        transforms.Resize((28, 28)), 
         transforms.ToTensor()
     ])
 
@@ -98,8 +98,8 @@ def train(opt):
     '''
 
     # データローダの取得
-    train_loader = DataLoader(train_dataset, batch_size=50, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=50, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
 
     # モデルの選択
     if learningmethod=='conv3d':
@@ -137,12 +137,19 @@ def train(opt):
         # model =  DCNConvLSTM_FC(input_dim=3, hidden_dim=[64, 32, 16], kernel_size=(3,3), num_layers=3).to(device)
         # criterion = nn.MSELoss()
         print('まだ実装が完了していません。別のオプションで実行してください。')
+
     elif learningmethod=='slowfast':
         model = SlowFastConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
     elif learningmethod=='slowfastmoe':
-        model = SlowFastMixtureOfExperts(3, 3, 20, 500, 56, 56, 5).to(device)
+
+        model = SlowFastMixtureOfExperts(3, 3, 50, 300, 28, 28, 5).to(device)
+        if lossfunction=='mse':
+            criterion = nn.MSELoss()
+
+    elif learningmethod=='multichannel':
+        model = MultiTaskMultiChannelModel(3, 100, 28, 28, 256).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
     else:
@@ -246,7 +253,7 @@ def train(opt):
                 elif lossfunction=='mse':
                     val_loss += criterion(outputs, labels).item()
                 elif lossfunction=='pair':
-                    loss = pairwise_ranking_loss(outputs, labels).item()
+                    val_loss += pairwise_ranking_loss(outputs, labels).item()
                 # val_spearmanにはスピアマンの相関順位係数が入る
                 val_spearman += validation_function(outputs, labels)
                 
@@ -310,7 +317,7 @@ def train(opt):
     return train_loss, val_loss_min
 
 if __name__=='__main__':
-    setproctitle("pairwise")
+    setproctitle("multichannel")
 
     # プログラムの動きだす時間を取得
     start_time = datetime.datetime.now()

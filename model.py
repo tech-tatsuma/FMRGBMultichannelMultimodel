@@ -480,97 +480,82 @@ class MultiTaskViViT(ViViT):
 
         return outputs  # Return list of outputs for each task
 
-# class DCNConvLSTMCell(nn.Module):
-#     def __init__(self, input_dim, hidden_dim, kernel_size, bias, group=4, offset_scale=1.0):
-#         super(DCNConvLSTMCell, self).__init__()
-#         self.hidden_dim = hidden_dim
-
-#         self.dcn = DCNv3(
-#             channels=input_dim + hidden_dim,
-#             kernel_size=kernel_size,
-#             group=group,
-#             offset_scale=offset_scale
-#         )
-
-#         self.conv = nn.Conv2d(in_channels=hidden_dim,
-#                               out_channels=4 * hidden_dim,
-#                               kernel_size=1,
-#                               padding=0,
-#                               bias=bias)
-
-#     def forward(self, input_tensor, cur_state):
-#         h_cur, c_cur = cur_state
-#         dcn_output = self.dcn(torch.cat([input_tensor, h_cur], dim=1))
-#         combined_conv = self.conv(dcn_output)
-#         i, f, o, g = torch.sigmoid(combined_conv).chunk(4, dim=1)
-#         c_next = f * c_cur + i * torch.tanh(g)
-#         return o * torch.tanh(c_next), c_next
-
-#     def init_hidden(self, batch_size, image_size):
-#         return (torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.weight.device),
-#                 torch.zeros(batch_size, self.hidden_dim, *image_size, device=self.conv.weight.device))
-
-# class DCNConvLSTM(ConvLSTM):
-#     def __init__(self, *args, **kwargs):
-#         super(DCNConvLSTM, self).__init__(*args, **kwargs)
-
-#     def forward(self, input_tensor, hidden_state=None):
-#         b, seq_len, _, h, w = input_tensor.size()
-
-#         if hidden_state is None:
-#             hidden_state = [cell.init_hidden(b, (h, w)) for cell in self.cell_list]
-
-#         layer_output_list, last_state_list = [], []
-#         for layer_idx, cell in enumerate(self.cell_list):
-#             h, c = hidden_state[layer_idx]
-#             output_inner = []
-#             for t in range(seq_len):
-#                 h, c = cell(input_tensor[:, t, :, :, :], (h, c))
-#                 output_inner.append(h)
-#             layer_output = torch.stack(output_inner, dim=1)
-#             layer_output_list.append(layer_output.permute(0, 2, 1, 3, 4))
-#             last_state_list.append((h, c))
-#             input_tensor = layer_output
-
-#         if not self.return_all_layers:
-#             layer_output_list, last_state_list = layer_output_list[-1:], last_state_list[-1:]
-
-#         return layer_output_list, last_state_list
-
-# class DCNConvLSTM_FC(DCNConvLSTM):
-#     def __init__(self, num_tasks=5, *args, **kwargs):
-#         super(DCNConvLSTM_FC, self).__init__(*args, **kwargs)
-#         self.num_tasks = num_tasks
-#         self.attention = nn.Sequential(
-#             nn.Conv2d(32, 1, kernel_size=1),
-#             nn.Sigmoid()
-#         )
+class Attention(nn.Module):
+    def __init__(self, input_dim):
+        super(Attention, self).__init__()
+        self.input_dim = input_dim
+        self.linear_q = nn.Linear(input_dim, input_dim)
+        self.linear_k = nn.Linear(input_dim, input_dim)
         
-#         self.dropout1 = nn.Dropout(0.5)
-#         self.dropout2 = nn.Dropout(0.5)
-        
-#         self.shared_fc = nn.Sequential(
-#             nn.Linear(32, 128),
-#             nn.ReLU(),
-#             self.dropout1,
-#             nn.Linear(128, 32),
-#             nn.ReLU(),
-#             self.dropout2
-#         )
-        
-#         self.task_fcs = nn.ModuleList([nn.Linear(32, 1) for _ in range(num_tasks)])
+    def forward(self, query, key, value):
+        q = self.linear_q(query)
+        k = self.linear_k(key)
+        scores = torch.bmm(q, k.transpose(1, 2)) / self.input_dim**0.5
+        attn_weights = f.softmax(scores, dim=2)
+        output = torch.bmm(attn_weights, value)
+        return output, attn_weights
 
-#     def forward(self, input_tensor, hidden_state=None):
-#         layer_output_list, last_state_list = super(DCNConvLSTM_FC, self).forward(input_tensor, hidden_state=hidden_state)
-#         output = layer_output_list[-1][:, -1, :, :, :]
+class SingleChannelModel(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super(SingleChannelModel, self).__init__()
         
-#         attention_map = self.attention(output)
-#         output = (output * attention_map).sum(dim=[2, 3])
+        # 3D Convolution to process video frames
+        self.conv3d = nn.Conv3d(1, 16, kernel_size=3, stride=1, padding=1)
+        self.pool3d = nn.MaxPool3d(kernel_size=(2, 2, 2))
         
-#         output = output.reshape(output.size(0), -1)
-#         shared_output = self.shared_fc(output)
+        # Considering the spatial size is reduced to half
+        reduced_dim = input_dim // 2
         
-#         # Compute task-specific outputs
-#         outputs = [task_fc(shared_output) for task_fc in self.task_fcs]
+        self.lstm = nn.LSTM(reduced_dim**3 * 16, hidden_dim, batch_first=True)
+        self.fc = nn.Linear(hidden_dim, hidden_dim)
+    
+    def forward(self, x):
+        # Convert to (batch, 1, depth, height, width) for 3D convolution
+        x = x.unsqueeze(1)
+        x = f.relu(self.conv3d(x))
+        x = self.pool3d(x)
         
-#         return outputs
+        # Reshape for LSTM
+        batch_size, _, depth, height, width = x.size()
+        x = x.view(batch_size, depth, -1)
+        
+        out, (hn, cn) = self.lstm(x)
+        out = self.fc(out[:, -1, :])
+        return out
+
+class MultiTaskMultiChannelModel(nn.Module):
+    def __init__(self, channels, depth, height, width, hidden_dim):
+        super(MultiTaskMultiChannelModel, self).__init__()
+        self.input_dim = depth * height * width
+        self.channels = channels
+        self.hidden_dim = hidden_dim
+
+        self.channel_models = nn.ModuleList([SingleChannelModel(self.input_dim, hidden_dim) for _ in range(channels)])
+        self.attentions = nn.ModuleList([Attention(hidden_dim) for _ in range(channels - 1)])  # -1 as we are using the first channel as a reference
+
+        # Multiple output layers for different tasks
+        self.task_outputs = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(5)])
+        
+        # Indicate whether dummy data has been passed through or not
+        self.initialized = False
+
+    def forward(self, x):
+        if not self.initialized:
+            dummy_data = torch.zeros(x.size(0), x.size(2), x.size(3), x.size(4)).to(x.device)
+            for channel_model in self.channel_models:
+                _ = channel_model(dummy_data)
+            self.initialized = True
+
+        channel_outs = [channel_model(x[:, i, :, :, :]) for i, channel_model in enumerate(self.channel_models)]
+
+        # Align the channels using attention
+        aligned_outs = [channel_outs[0]]
+        for i, attention in enumerate(self.attentions):
+            aligned_out = attention(channel_outs[i + 1].unsqueeze(1), channel_outs[0].unsqueeze(1), channel_outs[i + 1].unsqueeze(1))
+            aligned_outs.append(aligned_out[0].squeeze(1))
+
+        combined_out = torch.mean(torch.stack(aligned_outs, dim=0), dim=0)
+
+        task_outputs = [task_out(combined_out) for task_out in self.task_outputs]
+        
+        return task_outputs

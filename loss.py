@@ -73,9 +73,10 @@ def rank_loss(pred, true):
 
     return loss
 
-def pairwise_ranking_loss(pred, true):
+def pairwise_ranking_loss(pred, true, alpha=0.5):
     # 各バッチでのロスを格納するためのリスト
     batch_losses = []
+    mse = nn.MSELoss(reduction='none')
 
     # 各サンプルごとにペアワイズランキングロスを計算
     for i in range(pred.shape[0]):
@@ -89,8 +90,10 @@ def pairwise_ranking_loss(pred, true):
         # Create a mask for pairs where true_i[j] > true_i[k]
         mask = (true_diffs > 0).float()
 
-        loss = F.binary_cross_entropy_with_logits(pred_diffs, mask, reduction='none')
-        batch_losses.append(loss.mean())
+        pairwiseloss = F.binary_cross_entropy_with_logits(pred_diffs, mask, reduction='none')
+        mse_loss = mse(pred_i, true_i).mean()
+        combined = alpha * pairwiseloss + (1 - alpha) * mse_loss
+        batch_losses.append(combined)
 
     # すべてのサンプルの平均ロスを計算
     return torch.stack(batch_losses).mean()
