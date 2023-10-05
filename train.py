@@ -142,14 +142,14 @@ def train(opt):
         model = SlowFastConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
+            
     elif learningmethod=='slowfastmoe':
-
         model = SlowFastMixtureOfExperts(3, 3, 50, 300, 28, 28, 5).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
 
     elif learningmethod=='multichannel':
-        model = MultiTaskMultiChannelModel(3, 100, 28, 28, 256).to(device)
+        model = MultiTaskMultiChannelModel(channels=3, depth=300, height=28, width=28, hidden_dim=256).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
     else:

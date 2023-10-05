@@ -484,40 +484,58 @@ class Attention(nn.Module):
     def __init__(self, input_dim):
         super(Attention, self).__init__()
         self.input_dim = input_dim
+
+        # クエリおよびキーのための線形変換を設定
         self.linear_q = nn.Linear(input_dim, input_dim)
         self.linear_k = nn.Linear(input_dim, input_dim)
         
     def forward(self, query, key, value):
+        # クエリおよびキーの変換を実行
         q = self.linear_q(query)
         k = self.linear_k(key)
+
+        # アテンションスコアの計算
         scores = torch.bmm(q, k.transpose(1, 2)) / self.input_dim**0.5
+        # スコアをsoftmaxを用いて正規化
         attn_weights = f.softmax(scores, dim=2)
+
+        # 出力を計算
         output = torch.bmm(attn_weights, value)
         return output, attn_weights
 
 class SingleChannelModel(nn.Module):
-    def __init__(self, input_dim, hidden_dim):
+    def __init__(self, depth, height, width, hidden_dim):
         super(SingleChannelModel, self).__init__()
         
-        # 3D Convolution to process video frames
+        # ビデオフレームを処理する3D畳み込み
         self.conv3d = nn.Conv3d(1, 16, kernel_size=3, stride=1, padding=1)
         self.pool3d = nn.MaxPool3d(kernel_size=(2, 2, 2))
         
-        # Considering the spatial size is reduced to half
-        reduced_dim = input_dim // 2
+        # 空間サイズが半分に縮小されることを考慮
+        reduced_depth = depth // 2
+        reduced_height = height // 2
+        reduced_width = width // 2
+
+        # LSTMの入力サイズを計算
+        self.lstm_input_size = reduced_height * reduced_width * 16
         
-        self.lstm = nn.LSTM(reduced_dim**3 * 16, hidden_dim, batch_first=True)
+        self.lstm = nn.LSTM(self.lstm_input_size, hidden_dim, batch_first=True)
         self.fc = nn.Linear(hidden_dim, hidden_dim)
     
     def forward(self, x):
-        # Convert to (batch, 1, depth, height, width) for 3D convolution
+        # 3D畳み込みのための形状へ変換
         x = x.unsqueeze(1)
         x = f.relu(self.conv3d(x))
         x = self.pool3d(x)
+
+        # この時のxの形状は[batchsize, num channels, depth, height, width](num channels=16)
         
-        # Reshape for LSTM
+        # LSTMのための形状へ変換
         batch_size, _, depth, height, width = x.size()
+        # print('before view',x.shape)
         x = x.view(batch_size, depth, -1)
+
+        # print("Shape before LSTM:", x.shape)
         
         out, (hn, cn) = self.lstm(x)
         out = self.fc(out[:, -1, :])
@@ -526,36 +544,42 @@ class SingleChannelModel(nn.Module):
 class MultiTaskMultiChannelModel(nn.Module):
     def __init__(self, channels, depth, height, width, hidden_dim):
         super(MultiTaskMultiChannelModel, self).__init__()
-        self.input_dim = depth * height * width
         self.channels = channels
         self.hidden_dim = hidden_dim
 
-        self.channel_models = nn.ModuleList([SingleChannelModel(self.input_dim, hidden_dim) for _ in range(channels)])
-        self.attentions = nn.ModuleList([Attention(hidden_dim) for _ in range(channels - 1)])  # -1 as we are using the first channel as a reference
+        # 各チャンネルのモデルを作成
+        self.channel_models = nn.ModuleList([SingleChannelModel(depth, height, width, hidden_dim) for _ in range(channels)])
+        # 第一チャンネルを基準としてアテンションメカニズムを使用して他のチャンネルを整列させる
+        self.attentions = nn.ModuleList([Attention(hidden_dim) for _ in range(channels - 1)])
 
-        # Multiple output layers for different tasks
+        # 異なるタスクのための複数の出力層を持つ
         self.task_outputs = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(5)])
         
-        # Indicate whether dummy data has been passed through or not
+        # ダミーデータがすでに流れたかどうかを示す
         self.initialized = False
 
     def forward(self, x):
+        # 初期化されていない場合、ダミーデータをモデルに流す
         if not self.initialized:
+            # print('xsize: ', x.size())
             dummy_data = torch.zeros(x.size(0), x.size(2), x.size(3), x.size(4)).to(x.device)
             for channel_model in self.channel_models:
                 _ = channel_model(dummy_data)
             self.initialized = True
-
+        # アテンションを使用してチャンネルを整列させる
         channel_outs = [channel_model(x[:, i, :, :, :]) for i, channel_model in enumerate(self.channel_models)]
 
-        # Align the channels using attention
+        # アテンションを使用してチャンネルを整列させる
         aligned_outs = [channel_outs[0]]
         for i, attention in enumerate(self.attentions):
             aligned_out = attention(channel_outs[i + 1].unsqueeze(1), channel_outs[0].unsqueeze(1), channel_outs[i + 1].unsqueeze(1))
             aligned_outs.append(aligned_out[0].squeeze(1))
 
+        # すべての整列された出力を組み合わせる
         combined_out = torch.mean(torch.stack(aligned_outs, dim=0), dim=0)
-
+        # 各タスクのための出力を生成
         task_outputs = [task_out(combined_out) for task_out in self.task_outputs]
+
+        outputs = torch.cat(task_outputs, dim=1)
         
-        return task_outputs
+        return outputs
