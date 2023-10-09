@@ -5,7 +5,6 @@ from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
 from previvitmodel import Attention, PreNorm, FeedForward
 import torch.nn as nn
-# from .ops_dcnv3.modules.dcnv3 import DCNv3
 
 # Simple 3DCNN
 class ConvNet3D(nn.Module):
@@ -581,72 +580,122 @@ class MultiTaskMultiChannelModel(nn.Module):
         outputs = torch.cat(task_outputs, dim=1)
         
         return outputs
+    
+def positional_encoding(seq_len, d_model, batch_size=1):
+    pe = torch.zeros(batch_size, seq_len, d_model)
+    position = torch.arange(0, seq_len, dtype=torch.float).unsqueeze(1)
+    div_term = torch.exp(torch.arange(0, d_model, 2).float() * -(torch.log(torch.tensor(10000.0)) / d_model))
+    
+    position = position.unsqueeze(0).repeat(batch_size, 1, 1)
+    div_term = div_term.unsqueeze(0).unsqueeze(0).repeat(batch_size, seq_len, 1)
+    
+    pe[:, :, 0::2] = torch.sin(position * div_term)
+    pe[:, :, 1::2] = torch.cos(position * div_term)
+    
+    return pe
 
-class AttentionSeq(nn.Module):
-    def __init__(self, input_dim):
-        super(AttentionSeq, self).__init__()
-        self.linear_q = nn.Linear(input_dim, input_dim)
-        self.linear_k = nn.Linear(input_dim, input_dim)
-        self.linear_v = nn.Linear(input_dim, input_dim)
+class MultiHeadAttentionSeq(nn.Module):
+    # 線形変換用の層を初期化する
+    def __init__(self, input_dim, hidden_dim, num_heads):
+        super(MultiHeadAttentionSeq, self).__init__()
+        self.num_heads = num_heads
+        self.head_dim = hidden_dim // num_heads
         
+        assert (
+            self.head_dim * num_heads == hidden_dim
+        ), "Hidden dimension must be divisible by number of heads"
+        
+        self.linear_q = nn.Linear(input_dim, hidden_dim)
+        self.linear_k = nn.Linear(input_dim, hidden_dim)
+        self.linear_v = nn.Linear(input_dim, hidden_dim)
+        
+        self.fc_out = nn.Linear(hidden_dim, hidden_dim)
+        
+    # このメソッドでマルチヘッドアテンションの処理が行われる
     def forward(self, query, key, value):
-        q = self.linear_q(query)
-        k = self.linear_k(key)
-        v = self.linear_v(value)
-        scores = torch.bmm(q, k.transpose(1, 2)) / (self.linear_q.out_features ** 0.5)
-        attn_weights = f.softmax(scores, dim=2)
-        output = torch.bmm(attn_weights, v)
+        N = query.shape[0]
+        q = self.linear_q(query).view(N, -1, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
+        k = self.linear_k(key).view(N, -1, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
+        v = self.linear_v(value).view(N, -1, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
+
+        scores = torch.einsum("nqhd,nkhd->nhqk", [q, k]) / (self.head_dim ** 0.5)
+        attn_weights = torch.nn.functional.softmax(scores, dim=-1)
+        
+        output = torch.einsum("nhql,nlhd->nqhd", [attn_weights, v])
+        output = output.permute(0, 2, 1, 3).contiguous().view(N, -1, self.head_dim * self.num_heads)
+        output = self.fc_out(output)
         return output, attn_weights
     
 class Encoder(nn.Module):
     def __init__(self, depth, height, width, hidden_dim):
         super(Encoder, self).__init__()
+        self.hidden_dim = hidden_dim
         self.conv3d = nn.Conv3d(1, 16, kernel_size=3, stride=1, padding=1)
         self.pool3d = nn.MaxPool3d(kernel_size=(2, 2, 2))
-        self.lstm_input_size = (depth // 2) * (height // 2) * (width // 2) * 16
+        self.lstm_input_size = (height // 2) * (width // 2) * 16
         self.lstm = nn.LSTM(self.lstm_input_size, hidden_dim, batch_first=True)
     
     def forward(self, x):
+        # 3DCNNとLSTMを用いて入力テンソルをエンコードする
         x = x.unsqueeze(1)
         x = f.relu(self.conv3d(x))
         x = self.pool3d(x)
         x = x.view(x.size(0), x.size(2), -1)
-        out, (hn, _) = self.lstm(x)
-        return hn
+        # print('x before position: ',x.shape)
+        encoded_x = x + positional_encoding(x.size(1), x.size(2), batch_size=x.size(0)).to(x.device)
+        out, (hn, _) = self.lstm(encoded_x)
+        return hn, self.hidden_dim
 
 class DecoderWithAttention(nn.Module):
     def __init__(self, input_dim, hidden_dim):
         super(DecoderWithAttention, self).__init__()
-        self.attention = AttentionSeq(hidden_dim)
-        self.lstm = nn.LSTM(input_dim + hidden_dim, hidden_dim, batch_first=True)
-        self.fc = nn.Linear(hidden_dim, input_dim)
+        self.attention = MultiHeadAttentionSeq(input_dim, hidden_dim,8)
+        self.lstm = nn.LSTM(input_dim+hidden_dim, hidden_dim, batch_first=True)
+        self.fc = nn.Linear(hidden_dim, hidden_dim)
     
     def forward(self, x, encoder_outputs):
         outputs = []
         hidden = None
+        x = x.view(x.size(0), x.size(1), -1)
+        # print('x before position in decode: ',x.shape)
+        encoded_x = x + positional_encoding(x.size(1), x.size(2), batch_size=x.size(0)).to(x.device)
+        # print('x after position in decode: ',encoded_x.shape)
         for t in range(x.size(1)):
-            context, _ = self.attention(x[:, t, :], encoder_outputs, encoder_outputs)
-            lstm_out, hidden = self.lstm(torch.cat([x[:, t, :].unsqueeze(1), context], dim=2), hidden)
+            x_flat = encoded_x[:, t, :].view(x.size(0), -1).unsqueeze(1)
+            # デコーダがエンコーダの出力と自分自身の前の状態を用いて新たな出力を生成する
+            context, _ = self.attention(x_flat.squeeze(1), encoder_outputs, encoder_outputs)
+            lstm_out, hidden = self.lstm(torch.cat([x_flat, context], dim=2), hidden)
             out = self.fc(lstm_out.squeeze(1))
             outputs.append(out)
         return torch.stack(outputs, dim=1)
 
-
+# Seq2Seqクラスの定義
 class Seq2Seq(nn.Module):
     def __init__(self, channels, depth, height, width, hidden_dim, num_tasks=5):
         super(Seq2Seq, self).__init__()
         self.encoders = nn.ModuleList([Encoder(depth, height, width, hidden_dim) for _ in range(channels)])
         self.sync_linear = nn.Linear(hidden_dim * channels, hidden_dim * channels)
-        self.decoder = DecoderWithAttention(height * width, hidden_dim * channels)
-        self.task_outputs = nn.ModuleList([nn.Linear(hidden_dim * channels, 1) for _ in range(num_tasks)])
+        self.encoder_output_adjust = nn.Linear(hidden_dim * channels, height * width)
+        self.decoder = DecoderWithAttention(height * width, hidden_dim)
+        self.task_outputs = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(num_tasks)])
 
     def forward(self, x):
         device = x.device
-        encoder_outputs = [encoder(x[:, i, :, :, :].to(device)) for i, encoder in enumerate(self.encoders)]
+        encoder_outputs = []
+        for i, encoder in enumerate(self.encoders):
+            output, hidden_dim = encoder(x[:, i, :, :, :].to(device))
+            encoder_outputs.append(output)
+        
+        # 複数のエンコーダと一つのデコーダを統合している
         encoder_outputs = torch.cat(encoder_outputs, dim=2).squeeze(0)
         synced_encoder_outputs = self.sync_linear(encoder_outputs)
-        decoder_output = self.decoder(x[:, 0, :, :, :].to(device), synced_encoder_outputs)
+
+        adjusted_encoder_outputs = self.encoder_output_adjust(synced_encoder_outputs)
+
+        decoder_output = self.decoder(x[:, 0, :, :, :].to(device), adjusted_encoder_outputs)
         last_decoder_output = decoder_output[:, -1, :]
+
+        # 複数のタスクに対する出力を生成している
         task_outputs = [task_out(last_decoder_output) for task_out in self.task_outputs]
         outputs = torch.cat(task_outputs, dim=1)
         return outputs

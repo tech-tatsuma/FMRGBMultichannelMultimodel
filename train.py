@@ -323,7 +323,7 @@ def train(opt):
     return train_loss, val_loss_min
 
 if __name__=='__main__':
-    setproctitle("multichannel")
+    setproctitle("seq2seqmse")
 
     # プログラムの動きだす時間を取得
     start_time = datetime.datetime.now()
