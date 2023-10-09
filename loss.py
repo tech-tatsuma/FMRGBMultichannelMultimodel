@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import sys
 import scipy.stats
 
+# スピアマンの順位相関係数を計算するための関数
 def spearman_rank_correlation(truth, pred):
 
     # truthとpredをNumPy配列に変換

@@ -1,5 +1,5 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, MixtureOfExperts, SlowFastConvNet3D, SlowFastMixtureOfExperts, MultiTaskMultiChannelModel
+from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, MixtureOfExperts, SlowFastConvNet3D, SlowFastMixtureOfExperts, MultiTaskMultiChannelModel, Seq2Seq
 import torch
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import transforms
@@ -68,6 +68,7 @@ def train(opt):
     learning_rate = opt.lr
     usescheduler = opt.usescheduler
     lossfunction = opt.loss
+    batch = opt.batch
 
     addpath = os.path.dirname(data_file)
 
@@ -98,13 +99,13 @@ def train(opt):
     '''
 
     # データローダの取得
-    train_loader = DataLoader(train_dataset, batch_size=20, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=20, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch, shuffle=False)
 
     # モデルの選択
     if learningmethod=='conv3d':
         # conv3dモデルの設定
-        model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
+        model = ConvNet3D(in_channels=3, num_tasks=5, batch_size=batch, depth=500, height=56, width=56).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if lossfunction=='mse':
             criterion = nn.MSELoss()
@@ -120,14 +121,14 @@ def train(opt):
     # convlstmは(バッチ,シーケンス長,チャンネル数,縦ピクセル,横ピクセル)のデータ形式を欲す
     elif learningmethod=='vivit':
         # vivitの設定
-        model = MultiTaskViViT(image_size=56, patch_size=4, num_classes=1, num_frames=500, dim=192, depth=4, heads=3, num_tasks=5).to(device)
+        model = MultiTaskViViT(image_size=28, patch_size=4, num_classes=1, num_frames=300, dim=192, depth=4, heads=3, num_tasks=5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if lossfunction=='mse':
             criterion = nn.MSELoss()
 
     # MoEを導入したネットワークの呼び出し
     elif learningmethod=='moeconv3d':
-        model = MixtureOfExperts(3, 5, 50, 300, 28, 28, 5).to(device)
+        model = MixtureOfExperts(3, 5, batch, 300, 28, 28, 5).to(device)
         # もしランクロスがfalseだった場合は平均二乗誤差を採用し、そうでなければランキングロスを採用する
         if lossfunction=='mse':
             criterion = nn.MSELoss()
@@ -139,17 +140,22 @@ def train(opt):
         print('まだ実装が完了していません。別のオプションで実行してください。')
 
     elif learningmethod=='slowfast':
-        model = SlowFastConvNet3D(in_channels=3, num_tasks=5, batch_size=20, depth=500, height=56, width=56).to(device)
+        model = SlowFastConvNet3D(in_channels=3, num_tasks=5, batch_size=batch, depth=500, height=56, width=56).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
             
     elif learningmethod=='slowfastmoe':
-        model = SlowFastMixtureOfExperts(3, 3, 50, 300, 28, 28, 5).to(device)
+        model = SlowFastMixtureOfExperts(3, 3, batch, 300, 28, 28, 5).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
 
     elif learningmethod=='multichannel':
         model = MultiTaskMultiChannelModel(channels=3, depth=300, height=28, width=28, hidden_dim=256).to(device)
+        if lossfunction=='mse':
+            criterion = nn.MSELoss()
+
+    elif learningmethod=='seq2seq':
+        model = Seq2Seq(channels=3, depth=300, height=28, width=28, hidden_dim=256).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
     else:
@@ -336,6 +342,7 @@ if __name__=='__main__':
     parser.add_argument('--usescheduler', type=str, default='false', help='use lr scheduler true or false')
     parser.add_argument('--seed', type=int, default=42, help='Seed for random number generators')
     parser.add_argument('--loss', type=str, default='mse', help='choose loss function')
+    parser.add_argument('--batch',type=int, default=20, help='batch size')
     opt = parser.parse_args()
     # オプションを標準出力する
     print(opt)
