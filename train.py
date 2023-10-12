@@ -1,5 +1,13 @@
 from dataset import VideoDataset
-from model import ConvNet3D, ConvLSTM_FC, MultiTaskViViT, MixtureOfExperts, SlowFastConvNet3D, SlowFastMixtureOfExperts, MultiTaskMultiChannelModel, Seq2Seq
+from models.moecnn import MixtureOfExperts
+from models.convlstm import ConvLSTM_FC
+from models.moeslowfast import SlowFastMixtureOfExperts
+from models.seq2seq import Seq2Seq
+from models.simplecnn import ConvNet3D
+from models.vivit import MultiTaskViViT
+from models.slowfast import SlowFastConvNet3D
+from models.simplemulti import MultiTaskMultiChannelModel
+from models.moeseq2seq import MoESeq2Seq
 import torch
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import transforms
@@ -16,7 +24,7 @@ from torchinfo import summary
 import sys
 import datetime
 import random
-from loss import validation_function, soft_rank_loss, pairwise_ranking_loss
+from loss import spearman_rank_correlation, soft_rank_loss, pairwise_ranking_loss
 from setproctitle import setproctitle
 
 # シードの設定を行う関数
@@ -158,6 +166,11 @@ def train(opt):
         model = Seq2Seq(channels=3, depth=300, height=28, width=28, hidden_dim=256).to(device)
         if lossfunction=='mse':
             criterion = nn.MSELoss()
+
+    elif learningmethod=='moeseq2seq':
+        model = MoESeq2Seq(num_experts=3, depth=300, channels=3, height=28, width=28, hidden_dim=256).to(device)
+        if lossfunction=='mse':
+            criterion = nn.MSELoss()
     else:
         # 入力が不適切だった時の処理
         print('error: inappropriate input(learning method)')
@@ -261,7 +274,7 @@ def train(opt):
                 elif lossfunction=='pair':
                     val_loss += pairwise_ranking_loss(outputs, labels).item()
                 # val_spearmanにはスピアマンの相関順位係数が入る
-                val_spearman += validation_function(outputs, labels)
+                val_spearman += spearman_rank_correlation(outputs, labels)
                 
         val_loss /= len(val_loader)
         val_losses.append(val_loss)
@@ -280,7 +293,7 @@ def train(opt):
 
         # バリデーションロスが下がった時は結果を保存する
         if val_loss_min is None or val_loss < val_loss_min:
-            model_save_name = f'./latestresult/{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{lossfunction}intweak.pt'
+            model_save_name = f'./latestresult/{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}rankloss{lossfunction}intweak3.pt'
             torch.save(model.state_dict(), model_save_name)
             val_loss_min = val_loss
             val_loss_min_epoch = epoch
@@ -318,12 +331,12 @@ def train(opt):
     plt.ylabel('Spearman Loss')
     plt.legend()
     plt.title("Spearman Validation Loss")
-    plt.savefig(f'./latestgraph/{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}_rankloss{lossfunction}.png')
+    plt.savefig(f'./latestgraph/{learningmethod}_lr{learning_rate}_ep{epochs}_pa{patience}_rankloss{lossfunction}3.png')
 
     return train_loss, val_loss_min
 
 if __name__=='__main__':
-    setproctitle("seq2seqmse")
+    setproctitle("msenotpos")
 
     # プログラムの動きだす時間を取得
     start_time = datetime.datetime.now()

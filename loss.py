@@ -36,14 +36,6 @@ def spearman_rank_correlation(truth, pred):
     # スピアマンの順位相関係数を返す
     return spearman_corr
 
-# スピアマンの順位相関係数を向上させた評価関数
-def validation_function(y_pred, y_true):
-    # スピアマンの順位相関係数を計算
-    spearman_corr = spearman_rank_correlation(y_true, y_pred)
-    rank_loss = 1 - spearman_corr
-    
-    return rank_loss
-
 def soft_rank_loss(y_pred, y_true, tau=0.1):
     # 各データポイントに対して、各予測値および真の値の差を計算
     pred_diffs = y_pred.unsqueeze(2) - y_pred.unsqueeze(1)
